@@ -19,14 +19,13 @@ class Card:
 	def __init__(self, id=0, name='', url=''):
 		self.id = id
 		self.name = name
-		self.url = url
 		self.prices = []
 
 class Edition:
 	def __init__(self, id=0, name='', url='',foil=False,page=1):
 		self.id=id
 		self.name=name
-		self.url=url
+		self.url=url if not Foil else "{}/foils".format(url)
 		self.foil=foil
 		self.page=page
 		self.cards = []
@@ -36,7 +35,7 @@ dbeditions = phppgadmin.query("select id, name, url from ck_editions where name 
 for edition in dbeditions:
 	editions.append(Edition(edition["id"], edition["name"], edition["url"], False))
 	editions.append(Edition(edition["id"], edition["name"], edition["url"], True))
-#editions.append(Edition(168,"Zendikar","http://www.cardkingdom.com/mtg/zendikar",False))
+# editions.append(Edition(168,"Zendikar","http://www.cardkingdom.com/mtg/zendikar",False))
 # editions.append(Edition(168,"Zendikar","http://www.cardkingdom.com/mtg/zendikar/foils",True))
 
 sales = []
