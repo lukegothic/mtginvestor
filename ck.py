@@ -8,24 +8,28 @@ import math
 import os
 import codecs
 import phppgadmin
+import pdb
 
 class CardPrice:
-	def __init__(self, price=0, available=0, condition=0):
+	def __init__(self, price=0, available=0, condition=0, foil=False):
 		self.price = price
 		self.available = available
 		#condition:NM=1,EX=2,VG=3,G=4
 		self.condition = condition
+		self.foil = foil
+
 class Card:
-	def __init__(self, id=0, name='', url=''):
+	def __init__(self, id=0, name='', foil=False):
 		self.id = id
 		self.name = name
+		self.foil = foil
 		self.prices = []
 
 class CardPage:
-    def __init__(self, edition=None, foil=False, page=1):
-        self.edition = edition
-        self.foil = foil
-        self.page = page
+	def __init__(self, edition=None, foil=False, page=1):
+		self.edition = edition
+		self.foil = foil
+		self.page = page
 
 class Edition:
 	def __init__(self, id=0, name='', url=''):
@@ -35,7 +39,7 @@ class Edition:
 		self.cards = []
 
 editions = []
-dbeditions = phppgadmin.query("select id, name, url from ck_editions where name = 'Zendikar'")
+dbeditions = phppgadmin.query("select id, name, url from ck_editions")
 for edition in dbeditions:
 	editions.append(Edition(edition["id"], edition["name"], edition["url"]))
 
@@ -47,7 +51,9 @@ def getCards(page):
 	cardshtml = tree.xpath('//div[@class="productItemWrapper productCardWrapper "]')
 	for cardhtml in cardshtml:
 		cardinfo = cardhtml.xpath('.//span[@class="productDetailTitle"]/a')[0]
-		card = Card(0, cardinfo.text, cardinfo.attrib["href"])
+		#cardinfo.attrib["href"] <- url carta
+		isfoil = len(cardhtml.xpath('.//div[@class="productDetailSet"]/div[@class="foil"]')) > 0
+		card = Card(0, cardinfo.text, isfoil)
 		cardprices = cardhtml.xpath('.//form[@class="addToCartForm"]')
 		for cardprice in cardprices:
 			card.id = cardprice.xpath('.//input[@class="product_id"]')[0].attrib["value"];
@@ -55,10 +61,10 @@ def getCards(page):
 			saleprice = re.search(rSale, price)
 			if not saleprice is None:
 				price = saleprice.group(1)
-				sales.append(cardinfo.text)
+				sales.append("{}{} {}".format(cardinfo.text, " FOIL" if isfoil else "", saleprice))
 			available = cardprice.xpath('.//input[@class="maxQty"]')[0].attrib["value"];
 			condition = cardprice.xpath('.//input[@class="style"]')[0].attrib["value"];
-			card.prices.append(CardPrice(price, available, condition));
+			card.prices.append(CardPrice(price, available, condition, isfoil));
 		cards.append(card)
 	return cards
 
@@ -73,11 +79,11 @@ cachedir = '__mycache__/ck'
 if not os.path.exists(cachedir):
 	os.makedirs(cachedir)
 
-def do_work(edition):
-	print(edition.name)
+def do_work(cardpage):
+	print(cardpage.edition.name, cardpage.page, "(foil)" if cardpage.foil else "")
 
-	directory = "{}/{}".format(cachedir, edition.name.replace(":",""))
-	filename = "{}/{}{}.html".format(directory, "foil" if edition.foil else "", edition.page)
+	directory = "{}/{}".format(cachedir, cardpage.edition.name.replace(":",""))
+	filename = "{}/{}{}.html".format(directory, "foil" if cardpage.foil else "", cardpage.page)
 
 	try:
 		f = codecs.open(filename, "r", "utf-8")
@@ -85,29 +91,22 @@ def do_work(edition):
 		data = f.read()
 		f.close()
 	except IOError:
-		page = requests.get("{}?page={}&filter%5Bipp%5D={}".format(edition.url, edition.page, cpp))
+		page = requests.get("{}?page={}&filter%5Bipp%5D={}".format(cardpage.edition.url + ("/foils" if cardpage.foil else ""), cardpage.page, cpp))
 		data = page.text
 		f = codecs.open(filename, "w", "utf-8")
 		f.write(data)
 		f.close()
 
-	if edition.page == 1:
+	if cardpage.page == 1:
 		items = (int)(re.search(rCount, data).group(1))
 		paget = math.ceil(items / cpp)
 		for pagen in range(2, paget + 1):
-			q.put(Edition(edition.id, edition.name, edition.url, edition.foil, pagen))
+			q.put(CardPage(cardpage.edition, cardpage.foil, pagen))
 
+	# parsear html en busca de las cartas
 	cards = getCards(data)
-	with lock:
-		fcards = open("{}/cards.sql".format(directory), "a", encoding="utf8")
-		fprices = open("{}/prices.sql".format(directory), "a", encoding="utf8")
-		for card in cards:
-			cardname = card.name.replace("'","''")
-			fcards.write("({},'{}',{}),".format(card.id, cardname, edition.id))
-			for price in card.prices:
-				fprices.write("({},{},{},{},{},'{}'),".format(card.id, edition.id, "true" if edition.foil else "false", price.price, price.available, price.condition))
-		fcards.close()
-		fprices.close()
+	# anadir cartas a la edition
+	cardpage.edition.cards.extend(cards)
 
 def worker():
 	while True:
@@ -117,17 +116,40 @@ def worker():
 
 def createStructure(edition):
 	editiondir = "{}/{}".format(cachedir, edition.name.replace(":",""))
-	cardsfile = "{}/cards.sql".format(editiondir)
-	pricesfile = "{}/prices.sql".format(editiondir)
+	# cardsfile = "{}/cards.sql".format(editiondir)
+	# pricesfile = "{}/prices.sql".format(editiondir)
 	if not os.path.exists(editiondir):
 		with lock:
 			os.makedirs(editiondir)
-	f = open(cardsfile, "w", encoding="utf8")
-	f.write("INSERT INTO ck_cards(id,name,edition) VALUES")
-	f.close()
-	f =	open(pricesfile, "w", encoding="utf8")
-	f.write("INSERT INTO ck_cardprices(card,edition,foil,price,available,condition) VALUES")
-	f.close()
+	# f = open(cardsfile, "w", encoding="utf8")
+	# f.write("INSERT INTO ck_cards(id,name,edition) VALUES")
+	# f.close()
+	# f = open(pricesfile, "w", encoding="utf8")
+	# f.write("INSERT INTO ck_cardprices(card,edition,foil,price,available,condition) VALUES")
+	# f.close()
+
+# coger los precios de las cartas foil y meterlos en la carta normal
+def groupPrices(edition):
+	for i, foilcard in reversed(list(enumerate(edition.cards))):
+		if (foilcard.foil):
+			#buscar la correspondiente no foil
+			for normalcard in edition.cards:
+				if (not normalcard.foil and normalcard.name == foilcard.name):
+					normalcard.prices.extend(foilcard.prices)
+					edition.cards.pop(i)
+					break
+
+def saveData(edition):
+	cardsql = "INSERT INTO ck_cards(id,name,edition) VALUES"
+	pricesql = "INSERT INTO ck_cardprices(card,edition,foil,price,available,condition) VALUES"
+	for card in edition.cards:
+		cardname = card.name.replace("'","''")
+		cardsql = cardsql + "({},'{}',{}),".format(card.id, cardname, edition.id)
+		for price in card.prices:
+			pricesql = pricesql + "({},{},{},{},{},'{}'),".format(card.id, edition.id, "true" if price.foil else "false", price.price, price.available, price.condition)
+
+	phppgadmin.execute(cardsql[:-1])
+	phppgadmin.execute(pricesql[:-1])
 
 q = Queue()
 for i in range(10):
@@ -140,10 +162,18 @@ start = time.perf_counter()
 for edition in editions:
 	createStructure(edition)
 	q.put(CardPage(edition))
-    q.put(CardPage(edition, True))
+	q.put(CardPage(edition, True))
 
 q.join()
 
+print("Finished parsing\n")
+
+for edition in editions:
+	groupPrices(edition)
+	print(edition.name, len(edition.cards))
+	saveData(edition)
+
+print("Sales:", sales)
 print('time:',time.perf_counter() - start)
 
 #select 'editions.append(Edition('||cast(e.id as varchar)||','||chr(34)||e.name||chr(34)||','||chr(34)||e.url||chr(34)||'))' from ck_editions e
