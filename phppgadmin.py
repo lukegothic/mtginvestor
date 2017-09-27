@@ -2,7 +2,7 @@ import requests
 from lxml import html
 
 g_session = None
-g_debug = True
+g_debug = False
 c_server = {
     "ip": "fotoraton.es",
     "port": "8080",

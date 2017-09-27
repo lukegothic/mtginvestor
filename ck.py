@@ -21,22 +21,23 @@ class Card:
 		self.name = name
 		self.prices = []
 
+class CardPage:
+    def __init__(self, edition=None, foil=False, page=1):
+        self.edition = edition
+        self.foil = foil
+        self.page = page
+
 class Edition:
-	def __init__(self, id=0, name='', url='',foil=False,page=1):
+	def __init__(self, id=0, name='', url=''):
 		self.id=id
 		self.name=name
-		self.url=url if not Foil else "{}/foils".format(url)
-		self.foil=foil
-		self.page=page
+		self.url=url
 		self.cards = []
 
 editions = []
 dbeditions = phppgadmin.query("select id, name, url from ck_editions where name = 'Zendikar'")
 for edition in dbeditions:
-	editions.append(Edition(edition["id"], edition["name"], edition["url"], False))
-	editions.append(Edition(edition["id"], edition["name"], edition["url"], True))
-# editions.append(Edition(168,"Zendikar","http://www.cardkingdom.com/mtg/zendikar",False))
-# editions.append(Edition(168,"Zendikar","http://www.cardkingdom.com/mtg/zendikar/foils",True))
+	editions.append(Edition(edition["id"], edition["name"], edition["url"]))
 
 sales = []
 
@@ -73,7 +74,7 @@ if not os.path.exists(cachedir):
 	os.makedirs(cachedir)
 
 def do_work(edition):
-	print("{}{} #{}".format(edition.name, " (foil)" if edition.foil else "", edition.page))
+	print(edition.name)
 
 	directory = "{}/{}".format(cachedir, edition.name.replace(":",""))
 	filename = "{}/{}{}.html".format(directory, "foil" if edition.foil else "", edition.page)
@@ -138,7 +139,8 @@ start = time.perf_counter()
 
 for edition in editions:
 	createStructure(edition)
-	q.put(edition)
+	q.put(CardPage(edition))
+    q.put(CardPage(edition, True))
 
 q.join()
 
