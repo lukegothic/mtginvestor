@@ -44,5 +44,5 @@ UPDATE editions SET code_ck = 2380	WHERE code = '10E';
 UPDATE editions SET code_ck = 2700	WHERE code = 'TSB';
 UPDATE editions SET code_ck = 2720	WHERE code = 'U';
 UPDATE editions SET code_ck = 2960	WHERE code = 'EXP';
-#TODO: 3055	Commander 2017
-#TODO: 3059	Iconic Masters
+UPDATE editions SET code_ck = 3058	WHERE code = 'XLN';
+UPDATE editions SET code_ck = 3055	WHERE code = 'C17';
