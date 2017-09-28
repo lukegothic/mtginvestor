@@ -9,6 +9,10 @@ import os
 import codecs
 import phppgadmin
 import pdb
+import csv
+
+class FileExpired(Exception):
+    pass
 
 class CardPrice:
 	def __init__(self, price=0, available=0, condition=0, foil=False):
@@ -38,10 +42,22 @@ class Edition:
 		self.url=url
 		self.cards = []
 
+exectime = time.time()
+
 editions = []
-dbeditions = phppgadmin.query("select id, name, url from ck_editions")
+try:
+    #dbeditions = phppgadmin.query("select id, name, url from ck_editions")
+    dbeditions = phppgadmin.query("select id, name, url from ck_editions where name = 'Zendikar'")
+except:
+    print ("Using cached editions")
+    dbeditions = []
+    with open("__offlinecache__/editions.csv") as csvfile:
+        reader = csv.DictReader(csvfile, delimiter="|")
+        for row in reader:
+            dbeditions.append(row)
+
 for edition in dbeditions:
-	editions.append(Edition(edition["id"], edition["name"], edition["url"]))
+    editions.append(Edition(edition["id"], edition["name"], edition["url"]))
 
 sales = []
 
@@ -79,54 +95,44 @@ cachedir = '__mycache__/ck'
 if not os.path.exists(cachedir):
 	os.makedirs(cachedir)
 
+fileexpirationtime = 12 * 60 * 60
+
 def do_work(cardpage):
-	print(cardpage.edition.name, cardpage.page, "(foil)" if cardpage.foil else "")
+    print(cardpage.edition.name, cardpage.page, "(foil)" if cardpage.foil else "")
 
-	directory = "{}/{}".format(cachedir, cardpage.edition.name.replace(":",""))
-	filename = "{}/{}{}.html".format(directory, "foil" if cardpage.foil else "", cardpage.page)
+    directory = "{}/{}".format(cachedir, cardpage.edition.name.replace(":",""))
+    filename = "{}/{}{}.html".format(directory, "foil" if cardpage.foil else "", cardpage.page)
+    try:
+        st = os.stat(filename)
+        if (exectime - st.st_ctime > fileexpirationtime):
+            raise FileExpired()
+        else:
+            f = codecs.open(filename, "r", "utf-8")
+            data = f.read()
+            f.close()
+    except (IOError, FileExpired):
+        page = requests.get("{}?page={}&filter%5Bipp%5D={}".format(cardpage.edition.url + ("/foils" if cardpage.foil else ""), cardpage.page, cpp))
+        data = page.text
+        f = codecs.open(filename, "w", "utf-8")
+        f.write(data)
+        f.close()
 
-	try:
-		f = codecs.open(filename, "r", "utf-8")
-		#todo: invalidar cache si ha pasado 1 dia os.path.getmtime(path)
-		data = f.read()
-		f.close()
-	except IOError:
-		page = requests.get("{}?page={}&filter%5Bipp%5D={}".format(cardpage.edition.url + ("/foils" if cardpage.foil else ""), cardpage.page, cpp))
-		data = page.text
-		f = codecs.open(filename, "w", "utf-8")
-		f.write(data)
-		f.close()
-
-	if cardpage.page == 1:
-		items = (int)(re.search(rCount, data).group(1))
-		paget = math.ceil(items / cpp)
-		for pagen in range(2, paget + 1):
-			q.put(CardPage(cardpage.edition, cardpage.foil, pagen))
+    if cardpage.page == 1:
+        items = (int)(re.search(rCount, data).group(1))
+        paget = math.ceil(items / cpp)
+        for pagen in range(2, paget + 1):
+            q.put(CardPage(cardpage.edition, cardpage.foil, pagen))
 
 	# parsear html en busca de las cartas
-	cards = getCards(data)
+    cards = getCards(data)
 	# anadir cartas a la edition
-	cardpage.edition.cards.extend(cards)
+    cardpage.edition.cards.extend(cards)
 
 def worker():
 	while True:
 		item = q.get()
 		do_work(item)
 		q.task_done()
-
-def createStructure(edition):
-	editiondir = "{}/{}".format(cachedir, edition.name.replace(":",""))
-	# cardsfile = "{}/cards.sql".format(editiondir)
-	# pricesfile = "{}/prices.sql".format(editiondir)
-	if not os.path.exists(editiondir):
-		with lock:
-			os.makedirs(editiondir)
-	# f = open(cardsfile, "w", encoding="utf8")
-	# f.write("INSERT INTO ck_cards(id,name,edition) VALUES")
-	# f.close()
-	# f = open(pricesfile, "w", encoding="utf8")
-	# f.write("INSERT INTO ck_cardprices(card,edition,foil,price,available,condition) VALUES")
-	# f.close()
 
 # coger los precios de las cartas foil y meterlos en la carta normal
 def groupPrices(edition):
@@ -147,9 +153,16 @@ def saveData(edition):
 		cardsql = cardsql + "({},'{}',{}),".format(card.id, cardname, edition.id)
 		for price in card.prices:
 			pricesql = pricesql + "({},{},{},{},{},'{}'),".format(card.id, edition.id, "true" if price.foil else "false", price.price, price.available, price.condition)
+	editiondir = "{}/{}".format(cachedir, edition.name.replace(":",""))
+	cardsfile = "{}/cards.sql".format(editiondir)
+	pricesfile = "{}/prices.sql".format(editiondir)
+	with open(cardsfile, "w", encoding="utf8") as f:
+		f.write(cardsql[:-1])
+	with open(pricesfile, "w", encoding="utf8") as f:
+		f.write(pricesql[:-1])
 
-	phppgadmin.execute(cardsql[:-1])
-	phppgadmin.execute(pricesql[:-1])
+	#phppgadmin.execute(cardsql[:-1])
+	#phppgadmin.execute(pricesql[:-1])
 
 q = Queue()
 for i in range(10):
@@ -160,7 +173,10 @@ for i in range(10):
 start = time.perf_counter()
 
 for edition in editions:
-	createStructure(edition)
+	editiondir = "{}/{}".format(cachedir, edition.name.replace(":",""))
+	if not os.path.exists(editiondir):
+		with lock:
+			os.makedirs(editiondir)
 	q.put(CardPage(edition))
 	q.put(CardPage(edition, True))
 
