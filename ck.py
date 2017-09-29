@@ -46,8 +46,8 @@ exectime = time.time()
 
 editions = []
 try:
-    #dbeditions = phppgadmin.query("select id, name, url from ck_editions")
-    dbeditions = phppgadmin.query("select id, name, url from ck_editions where name = 'Zendikar'")
+    dbeditions = phppgadmin.query("select id, name, url from ck_editions")
+    #dbeditions = phppgadmin.query("select id, name, url from ck_editions where name = 'Zendikar'")
 except:
     print ("Using cached editions")
     dbeditions = []
@@ -76,8 +76,8 @@ def getCards(page):
 			price = cardprice.xpath('.//span[@class="stylePrice"]')[0].text_content().replace("$", "").replace("\n", "").strip();
 			saleprice = re.search(rSale, price)
 			if not saleprice is None:
+				sales.append("{}{} {}".format(cardinfo.text, " FOIL" if isfoil else "", price))
 				price = saleprice.group(1)
-				sales.append("{}{} {}".format(cardinfo.text, " FOIL" if isfoil else "", saleprice))
 			available = cardprice.xpath('.//input[@class="maxQty"]')[0].attrib["value"];
 			condition = cardprice.xpath('.//input[@class="style"]')[0].attrib["value"];
 			card.prices.append(CardPrice(price, available, condition, isfoil));
