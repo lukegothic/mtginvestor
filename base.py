@@ -69,16 +69,5 @@ class Deckbox:
                     inventory.append(inventorycard)
 
                 inventorycard.entries.append(CardDetails(0,(int)(row["Count"]),True if row["Foil"] == "foil" else False, row["Language"],row["Condition"]))
-        count = 0
-        for card in inventory:
-            for entry in card.entries:
-                count = count + entry.count
 
-        print(count)
-
-def test():
-    c = InventoryCard('1','asdasd','ed', 22)
-    print(c.id)
-    print(c.name)
-    print(c.edition)
-    print(c.count)
+        return inventory
