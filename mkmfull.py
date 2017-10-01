@@ -9,7 +9,7 @@ import math
 import copy
 import sys
 
-cachedir = "cache/mkm/prices"
+cachedir = "__mycache__/mkm/prices"
 
 if not os.path.exists(cachedir):
 	os.makedirs(cachedir)

@@ -51,7 +51,7 @@ try:
 except:
     print ("Using cached editions")
     dbeditions = []
-    with open("__offlinecache__/editions.csv") as csvfile:
+    with open("__offlinecache__/ck/editions.csv") as csvfile:
         reader = csv.DictReader(csvfile, delimiter="|")
         for row in reader:
             dbeditions.append(row)
@@ -161,7 +161,7 @@ def saveData(edition):
 	with open(pricesfile, "w", encoding="utf8") as f:
 		f.write(pricesql[:-1])
 
-	#phppgadmin.execute(cardsql[:-1])
+	phppgadmin.execute(cardsql[:-1])
 	#phppgadmin.execute(pricesql[:-1])
 
 q = Queue()
