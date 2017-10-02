@@ -3,9 +3,15 @@ import requests
 import os
 import time
 import re
+import threading
+from queue import Queue
+from lxml import html
+import sys
 
 basecachedir = "__mycache__"
 
+class FileExpired(Exception):
+    pass
 
 # base
 class Card:
@@ -13,7 +19,8 @@ class Card:
         self.id=id
         self.name=name
         self.edition=edition
-
+    def __iter__(self):
+        return { "id": self.id, "name": self.name, "edition": self.edition }
 # detalle
 class CardDetails:
     def __init__(self, price=0,count=0,foil=False,language='en',condition='NM'):
@@ -31,28 +38,26 @@ class InventoryCard(Card):
 
 # una carta con inventario
 class PriceCard(Card):
-    def __init__(self, id='',name='',edition='',details=CardDetails()):
+    def __init__(self, id='',name='',edition='',details=None):
         super().__init__(id, name, edition)
         self.price = details.price
         self.count = details.count
         self.foil = details.foil
         self.language = details.language
         self.condition = details.condition
+    def todict(self):
+        return { "id": self.id, "name": self.name, "edition": self.edition, "price": self.price, "count": self.count, "foil": "foil" if self.foil else "", "language": self.language, "condition": self.condition }
 
 class Deckbox:
     cachedir = "{}/deckbox/{}".format(basecachedir, "{}")
-
     def inventory():
         cachedir = Deckbox.cachedir.format("inventory")
         req = requests.get("https://deckbox.org/sets/export/125700?format=csv&f=&s=&o=&columns=Image%20URL")
-
         if not os.path.exists(cachedir):
-        	os.makedirs(cachedir)
-
-        filename = "{}/{}.csv".format(cachedir, time.time());
+            os.makedirs(cachedir)
+        filename = "{}/{}.csv".format(cachedir, time.strftime("%Y%m%d_%H%M%S"));
         with open(filename, "w") as f:
             f.write(req.text);
-
         inventory = []
         reID = "(\d*).jpg$"
         with open(filename) as f:
@@ -67,7 +72,117 @@ class Deckbox:
                 if (inventorycard is None):
                     inventorycard = InventoryCard(id, row["Name"], row["Edition"])
                     inventory.append(inventorycard)
-
                 inventorycard.entries.append(CardDetails(0,(int)(row["Count"]),True if row["Foil"] == "foil" else False, row["Language"],row["Condition"]))
-
         return inventory
+
+class CK:
+    cachedir = "{}/ck/{}".format(basecachedir, "{}")
+    def buylist(writecsv=False):
+        #TODO: numero dinamico de pginas
+        print("==[ CK BUYLIST  ]==")
+        def addCards(pagehtml):
+            tree = html.fromstring(pagehtml)
+            cardshtml = tree.xpath("//div[contains(@class,'itemContentWrapper')]")
+            for cardhtml in cardshtml:
+                pricewrapper = cardhtml.xpath(".//span[@class='stylePrice']")
+                # si no tiene precio es una premium card de las que hay que preguntar precio
+                if len(pricewrapper) == 1:
+                    pricewrapper = pricewrapper[0]
+                    id = pricewrapper.xpath('.//form/input[@class="product_id"]')[0].attrib["value"];
+                    name = cardhtml.xpath(".//span[@class='productDetailTitle']/text()")[0]
+                    edition = cardhtml.xpath(".//div[@class='productDetailSet']/text()")[0]
+                    edition = re.search(reEdition, edition).group(1).strip()
+                    price = "{}.{}".format(pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
+                    price = round((float)(price) * usdeur_rate, 2)
+                    # credit = "{}.{}".format(pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
+                    # el credit se puede sacar multiplicando por 1.3
+                    maxQty = pricewrapper.xpath('.//form/input[@class="maxQty"]')[0].attrib["value"];
+                    foil = len(cardhtml.xpath(".//div[@class='foil']")) > 0
+                    #TODO: algunas veces se meten repetidas (mirar tokens)
+                    inventorycard = None
+                    for card in buylist:
+                        if (card.name == name and card.edition == edition):
+                            inventorycard = card
+                            break
+                    if (inventorycard is None):
+                        inventorycard = InventoryCard(id, name, edition)
+                        buylist.append(inventorycard)
+                    inventorycard.entries.append(CardDetails(price, maxQty, foil, "en", "NM"))
+        def do_work(page):
+            sys.stdout.write("Paginas procesadas: %d%%   \r" % (page * 100 / npages))
+            sys.stdout.flush()
+
+            filename = "{}/page{}.html".format(cachedir, page)
+            try:
+            	f = open(filename, "r", encoding="utf8")
+            	data = f.read()
+            	f.close()
+            except:
+                page = requests.get("{}{}".format(baseurl, page))
+                data = page.text
+                with open(filename, "w", encoding="utf8") as f:
+                    f.write(data)
+            addCards(data)
+        def worker():
+        	while True:
+        		item = q.get()
+        		do_work(item)
+        		q.task_done()
+
+        today = time.strftime("%Y%m%d")
+
+        cachedir = CK.cachedir.format("buylist/" + today)
+
+        if not os.path.exists(cachedir):
+        	os.makedirs(cachedir)
+
+        sys.stdout.write("Obteniendo rate USD -> EUR...")
+        sys.stdout.flush()
+
+        req = requests.get("http://finance.yahoo.com/d/quotes.csv?f=l1d1t1&s=USDEUR=X")
+        usdeur_rate = req.text.split(",")
+
+        with open("{}/usdeur_rate_{}_{}.txt".format(basecachedir, usdeur_rate[1].replace("/", "-").replace('"', ""), usdeur_rate[2].replace("\n", "").replace(":", "").replace('"', "")), "w", encoding="utf8") as f:
+            f.write(usdeur_rate[0])
+            usdeur_rate = (float)(usdeur_rate[0])
+
+        sys.stdout.write(str(usdeur_rate))
+        print("")
+
+        baseurl = "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bipp%5D=100&filter%5Bsort%5D=name&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=&filter%5Bcategory_id%5D=0&filter%5Bfoil%5D=1&filter%5Bnonfoil%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=&page="
+        reEdition = "(.*)\("
+        lock = threading.Lock()
+
+        buylist = []
+
+        q = Queue()
+        for i in range(10):
+        	t = threading.Thread(target=worker)
+        	t.daemon = True
+        	t.start()
+
+        start = time.perf_counter()
+
+        npages = 254
+
+        for p in range(1, npages):
+        	q.put(p)
+
+        q.join()
+
+        print("Crawling finalizado          ")
+
+        if (writecsv):
+            print("Guardando .csv en disco...")
+
+            filename = "{}/buylist.csv".format(cachedir);
+            with open(filename, "w", newline='\n') as f:
+                writer = csv.DictWriter(f, fieldnames=["id", "name", "edition", "price", "count", "foil", "language", "condition"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                writer.writeheader()
+                for card in buylist:
+                    for entry in card.entries:
+                        writer.writerow({ "id": card.id, "name": card.name, "edition": card.edition, "price": entry.price, "count": entry.count, "foil": "1" if entry.foil else "0", "language": entry.language, "condition": entry.condition })
+
+        print("==[     END     ]==")
+
+        return buylist

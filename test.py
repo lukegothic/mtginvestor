@@ -1,2 +1,2 @@
-from base import Deckbox
-Deckbox.inventory()
+from base import CK
+CK.buylist()
