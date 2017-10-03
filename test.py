@@ -1,4 +1,5 @@
 from base import CK
+from base import MKM
 from queue import Queue
 import threading
 import requests
@@ -35,13 +36,15 @@ import sys
 # q.join()
 
 # TODO: RECICLAR ESTO EN EL main.py
-buylist = CK.buylist()
-sql = "INSERT INTO ck_buylist(card,edition,price,foil,count) VALUES"
-for card in buylist:
-    for entry in card.entries:
-        sql = sql + "({},{},{},{},{}),".format(card.id, card.edition, entry.price, "true" if entry.foil else "false", entry.count)
+# buylist = CK.buylist()
+# sql = "INSERT INTO ck_buylist(card,edition,price,foil,count) VALUES"
+# for card in buylist:
+#     for entry in card.entries:
+#         sql = sql + "({},{},{},{},{}),".format(card.id, card.edition, entry.price, "true" if entry.foil else "false", entry.count)
+#
+# sys.stdout.write("Guardando buylist...")
+# sys.stdout.flush()
+# phppgadmin.execute(sql[:-1])
+# sys.stdout.write("OK")
 
-sys.stdout.write("Guardando buylist...")
-sys.stdout.flush()
-phppgadmin.execute(sql[:-1])
-sys.stdout.write("OK")
+MKM.getEditions()

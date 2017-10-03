@@ -162,7 +162,7 @@ def saveData(edition):
 		f.write(pricesql[:-1])
 
 	phppgadmin.execute(cardsql[:-1])
-	#phppgadmin.execute(pricesql[:-1])
+	phppgadmin.execute(pricesql[:-1])
 
 q = Queue()
 for i in range(10):

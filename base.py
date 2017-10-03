@@ -239,5 +239,46 @@ class CK:
         print("==[     END     ]==")
 
         return buylist
-    def store(writecsv=False):
+    def store():
+        pass
+
+class MKM:
+    baseurl = "https://www.magiccardmarket.eu"
+    def getEditions():
+        editions = []
+        offlinecachedir = "__offlinecache__/mkm"
+        offlinecachefile = "{}/editions.csv".format(offlinecachedir)
+        try:
+            editions = phppgadmin.query("select id, name, url from mkm_editions")
+        except: #TODO: capturar excepcion que corresponda
+            try:
+                with open(offlinecachefile) as csvfile:
+                    reader = csv.DictReader(csvfile, delimiter="|")
+                    for row in reader:
+                        editions.append(row)
+            except:
+                pass
+        if (len(editions) == 0):
+            page = requests.get(MKM.baseurl + "/Expansions")
+            tree = html.fromstring(page.text)
+            xpatheditions = tree.xpath("//a[@class='alphabeticExpansion']")
+            for edition in xpatheditions:
+                relativeurl = edition.attrib["href"]
+                editions.append({
+                    "id": relativeurl.replace("/Expansions/", ""),
+                    "name": edition.xpath("./div[@class='yearExpansionName']/text()")[0],
+                    "url": MKM.baseurl + relativeurl
+                })
+            if not os.path.exists(offlinecachedir):
+                os.makedirs(offlinecachedir)
+            sql = "INSERT INTO mkm_editions(id,name,url) VALUES"
+            with open(offlinecachefile, "w", newline='\n') as f:
+                writer = csv.DictWriter(f, fieldnames=["id", "name", "url"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                writer.writeheader()
+                for edition in editions:
+                    writer.writerow({ "id": edition["id"], "name": edition["name"], "url": edition["url"] })
+                    sql += "('{}','{}','{}'),".format(edition["id"], edition["name"].replace("'", "''"), edition["url"])
+            phppgadmin.execute(sql[:-1])
+        return editions
+    def getCards():
         pass

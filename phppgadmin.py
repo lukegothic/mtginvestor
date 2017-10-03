@@ -27,14 +27,16 @@ def connect():
     except Exception as e:
         print("Server not responding")
         raise Exception()
-
 def execute(sql):
     #TODO: detectar si la sesion se ha caido
     if g_session is None:
         connect()
-
-    return g_session.post("http://{}:{}/phppgadmin/{}".format(c_server["ip"], c_server["port"], "sql.php"), { "server": "localhost:{}:allow".format(c_server["pgport"]), "database": "magic", "search_path": "public", "query": sql })
-
+    response = g_session.post("http://{}:{}/phppgadmin/{}".format(c_server["ip"], c_server["port"], "sql.php"), { "server": "localhost:{}:allow".format(c_server["pgport"]), "database": "magic", "search_path": "public", "query": sql })
+    if g_debug:
+        with open("phppgadmin_lastquery.html", "w") as f:
+            f.write(response.text)
+            f.write(sql)
+    return response
 def query(sql):
     #TODO: detectar si la sesion se ha caido
     if g_session is None:
