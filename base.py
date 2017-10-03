@@ -278,7 +278,10 @@ class MKM:
                 for edition in editions:
                     writer.writerow({ "id": edition["id"], "name": edition["name"], "url": edition["url"] })
                     sql += "('{}','{}','{}'),".format(edition["id"], edition["name"].replace("'", "''"), edition["url"])
-            phppgadmin.execute(sql[:-1])
+            sql = sql[:-1]
+            #TODO: Actualizar PG a 9.5++
+            #sql += " ON CONFLICT (id) DO UPDATE SET name = excluded.name, url = excluded.url"
+            phppgadmin.execute(sql)
         return editions
     def getCards():
         pass
