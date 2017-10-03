@@ -13,7 +13,8 @@ def connect():
     global g_session
     g_session = requests.Session()
     try:
-        print("Connecting to PHPPGADMIN...")
+        if (g_debug):
+            print("Connecting to PHPPGADMIN...")
         resp = g_session.get("http://{}:{}/phppgadmin/{}".format(c_server["ip"], c_server["port"], "redirect.php?subject=server&server=localhost%3A{}%3Aallow&".format(c_server["pgport"])), timeout=5)
         tree = html.fromstring(resp.content)
         username = tree.xpath("//input[@name='loginUsername']")[0]
@@ -21,7 +22,8 @@ def connect():
         loginpostdata = {"subject": "server", "server": "localhost:5432:allow", "loginServer": "localhost:5432:allow", "loginUsername": "postgres", "loginSubmit": "Autenticar"}
         loginpostdata[password.attrib["name"]] = "postgres"
         resp = g_session.post("http://{}:{}/phppgadmin/{}".format(c_server["ip"], c_server["port"], "redirect.php"), loginpostdata)
-        print("Connected to PHPPGADMIN")
+        if (g_debug):
+            print("Connected to PHPPGADMIN")
     except Exception as e:
         print("Server not responding")
         raise Exception()

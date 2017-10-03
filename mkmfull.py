@@ -55,6 +55,7 @@ rEditionNotFirstPage = "https:\/\/www.magiccardmarket.eu\/Products\/Singles\/(.*
 rEdition = "https:\/\/www.magiccardmarket.eu\/Products\/Singles\/(.*)"
 rHash = "#.*"
 rPPU = '\(PPU: (.*?)\)'
+reItemLocation = "'Item location: (.*)'"
 
 cpp = 30
 productFilter = { "productFilter[sellerRatings][]": ["1", "2"], "productFilter[idLanguage][]": [1], "productFilter[condition][]": ["MT", "NM"] }
@@ -70,7 +71,7 @@ def do_work(url):
 		# procesar edition
 		m = re.match(rEditionNotFirstPage, url)
 		if m is None:
-			#procesar primera pagina
+			# procesar primera pagina
 			m = re.match(rEdition, url)
 			page = 1
 		else:
@@ -155,6 +156,8 @@ def do_work(url):
 			with lock:
 				f = open("{}/prices.sql".format(editiondir), "a", encoding="utf8")
 				for row in tree.xpath('//tbody[@id="articlesTable"]/tr[not(@class)]'):
+					itemlocation = row.xpath(".//td[@class='Seller']/span/span/span[@class='icon']")[0].attrib["onmouseover"]
+					itemlocation = re.search(reItemLocation, itemlocation).group(1)
 					seller = row.xpath(".//td[@class='Seller']/span/span/a")[0].attrib["href"].replace("/Users/", "")
 					price = row.xpath(".//td[contains(@class,'st_price')]")[0].text_content().replace(",",".").replace("€","")
 					available = row.xpath(".//td[contains(@class,'st_ItemCount')]")[0].text_content()
@@ -162,7 +165,7 @@ def do_work(url):
 					if not ppu is None:
 						price = ppu.group(1)
 						available = "4"
-					f.write("('{}','{}',{},{},{},'{}'),".format(card, edition, "true" if foil else "false", price, available, seller))
+					f.write("('{}','{}',{},{},{},'{}','{}'),".format(card, edition, "true" if foil else "false", price, available, seller, itemlocation))
 				f.close()
 
 q = Queue()
@@ -184,7 +187,7 @@ def createStructure(edition):
 	f.write("INSERT INTO mkm_cards(code,name,edition) VALUES")
 	f.close()
 	f =	open(pricesfile, "w", encoding="utf8")
-	f.write("INSERT INTO mkm_cardprices(card,edition,foil,price,available,seller) VALUES")
+	f.write("INSERT INTO mkm_cardprices(card,edition,foil,price,available,seller,itemlocation) VALUES")
 	f.close()
 
 for i in range(6):

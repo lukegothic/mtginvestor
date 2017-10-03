@@ -7,12 +7,12 @@ import threading
 from queue import Queue
 from lxml import html
 import sys
+import phppgadmin
 
 basecachedir = "__mycache__"
 
 class FileExpired(Exception):
     pass
-
 # base
 class Card:
     def __init__(self, id='',name='',edition=''):
@@ -23,19 +23,19 @@ class Card:
         return { "id": self.id, "name": self.name, "edition": self.edition }
 # detalle
 class CardDetails:
-    def __init__(self, price=0,count=0,foil=False,language='en',condition='NM'):
+    def __init__(self, price=0,count=0,foil=False,language='en',condition='NM',seller='',location=''):
         self.price = price
         self.count = count
         self.foil = foil
         self.language = language
         self.condition = condition
-
+        self.seller = seller
+        self.location = location
 # una carta de un inventario (varias entradas de tipo CardDetails)
 class InventoryCard(Card):
     def __init__(self, id='',name='',edition=''):
         super().__init__(id, name, edition)
         self.entries = []
-
 # una carta con inventario
 class PriceCard(Card):
     def __init__(self, id='',name='',edition='',details=None):
@@ -47,7 +47,29 @@ class PriceCard(Card):
         self.condition = details.condition
     def todict(self):
         return { "id": self.id, "name": self.name, "edition": self.edition, "price": self.price, "count": self.count, "foil": "foil" if self.foil else "", "language": self.language, "condition": self.condition }
-
+# CLASE APARTE
+class Proxy:
+    url = "https://free-proxy-list.net/"
+    def getAll():
+        req = requests.get(Proxy.url)
+        tree = html.fromstring(req.text)
+        proxies = tree.xpath("//table[@id='proxylisttable']/tbody/tr")
+        plist = []
+        for proxy in proxies:
+            plist.append({
+                "ip": proxy.xpath("./td[1]/text()")[0],
+                "port": proxy.xpath("./td[2]/text()")[0],
+                "anonymity": proxy.xpath("./td[5]/text()")[0],
+                "secure": proxy.xpath("./td[7]/text()")[0] == "yes"
+            })
+        return plist
+    def getSecure():
+        proxies = Proxy.getAll()
+        secure = []
+        for proxy in proxies:
+            if proxy["secure"]:
+                secure.append(proxy)
+        return secure
 class Deckbox:
     cachedir = "{}/deckbox/{}".format(basecachedir, "{}")
     def inventory():
@@ -74,11 +96,25 @@ class Deckbox:
                     inventory.append(inventorycard)
                 inventorycard.entries.append(CardDetails(0,(int)(row["Count"]),True if row["Foil"] == "foil" else False, row["Language"],row["Condition"]))
         return inventory
-
 class CK:
     cachedir = "{}/ck/{}".format(basecachedir, "{}")
+    def getEditions():
+        editions = []
+        try:
+            editions = phppgadmin.query("select id, name, url from ck_editions")
+        except:#TODO: capturar excepcion que corresponda
+            print ("Using cached editions")
+            editions = []
+            with open("__offlinecache__/ck/editions.csv") as csvfile:
+                reader = csv.DictReader(csvfile, delimiter="|")
+                for row in reader:
+                    editions.append(row)
+        if (len(editions) == 0):
+            #TODO: integrar con proceso de solicitud de ediciones!
+            pass
+        return editions
     def buylist(writecsv=False):
-        #TODO: numero dinamico de pginas
+        #TODO: numero dinamico de paginas
         print("==[ CK BUYLIST  ]==")
         def addCards(pagehtml):
             tree = html.fromstring(pagehtml)
@@ -92,6 +128,17 @@ class CK:
                     name = cardhtml.xpath(".//span[@class='productDetailTitle']/text()")[0]
                     edition = cardhtml.xpath(".//div[@class='productDetailSet']/text()")[0]
                     edition = re.search(reEdition, edition).group(1).strip()
+                    editionid = None
+                    # traducimos nombre de edicion a id
+                    for e in editions:
+                        if (e["name"] == edition):
+                            editionid = e["id"]
+                            break
+                    if not editionid is None:
+                        edition = editionid
+                    else:
+                        print("Edicion no encontrada", edition, name)
+                        edition = 0
                     price = "{}.{}".format(pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
                     price = round((float)(price) * usdeur_rate, 2)
                     # credit = "{}.{}".format(pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
@@ -136,6 +183,7 @@ class CK:
         if not os.path.exists(cachedir):
         	os.makedirs(cachedir)
 
+        #TODO: CALCULAR CONVERSION AHORA O MEJOR DESPUES????
         sys.stdout.write("Obteniendo rate USD -> EUR...")
         sys.stdout.flush()
 
@@ -146,7 +194,7 @@ class CK:
             f.write(usdeur_rate[0])
             usdeur_rate = (float)(usdeur_rate[0])
 
-        sys.stdout.write(str(usdeur_rate))
+        sys.stdout.write("OK [1 Dollar = {} Euro]".format(usdeur_rate))
         print("")
 
         baseurl = "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bipp%5D=100&filter%5Bsort%5D=name&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=&filter%5Bcategory_id%5D=0&filter%5Bfoil%5D=1&filter%5Bnonfoil%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=&page="
@@ -154,6 +202,11 @@ class CK:
         lock = threading.Lock()
 
         buylist = []
+        sys.stdout.write("Obteniendo ediciones CK...")
+        sys.stdout.flush()
+        editions = CK.getEditions()
+        sys.stdout.write("OK [{} ediciones]".format(len(editions)))
+        print("")
 
         q = Queue()
         for i in range(10):
@@ -181,8 +234,10 @@ class CK:
                 writer.writeheader()
                 for card in buylist:
                     for entry in card.entries:
-                        writer.writerow({ "id": card.id, "name": card.name, "edition": card.edition, "price": entry.price, "count": entry.count, "foil": "1" if entry.foil else "0", "language": entry.language, "condition": entry.condition })
+                        writer.writerow({ "id": card.id, "name": card.name, "edition": card.edition, "price": entry.price, "count": entry.count, "foil": "true" if entry.foil else "false", "language": entry.language, "condition": entry.condition })
 
         print("==[     END     ]==")
 
         return buylist
+    def store(writecsv=False):
+        pass
