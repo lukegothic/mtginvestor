@@ -75,16 +75,10 @@ UPDATE editions SET code_mkm = 'Unlimited' WHERE code = 'U';
 
 cards CK --> MASTER
 
-select *
-from ck_cards ckc
-inner join ck_editions cke on ckc.edition = cke.id
-inner join editions e on cke.id = e.code_ck
-left join cards c on ckc.name = c.name and e.code = c.edition
-where e.name = 'Zendikar'
-
--- ESTO NO VA, pero es un camino a seguir
-UPDATE cards
-SET ck_id = ckcards.id
-FROM editions e, (SELECT ckc.id, ckc.name, cke.id as ckedition FROM ck_cards ckc
-INNER JOIN ck_editions cke on ckc.edition = cke.id) as ckcards
-WHERE edition = e.code and e.code_ck = ckcards.ckedition and lower(ckcards.name) = lower(cards.name)
+-- esto relaciona las cartas, prueba con WWK
+select c.id, c.name, c.edition, ck.id, mkm.id
+from cards c
+left join editions e on c.edition = e.code
+left join ck_cards ck on lower(c.name) = lower(ck.name) and e.code_ck = ck.edition
+left join mkm_cards mkm on lower(c.name) = lower(mkm.name) and e.code_mkm = mkm.edition
+where c.edition = 'WWK'

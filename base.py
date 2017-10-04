@@ -352,11 +352,7 @@ class MKM:
                 do_work(q.get())
                 q.task_done()
         cpp = 30
-        rHash = "#.*"
         rPage = "https:\/\/www.magiccardmarket.eu\/Products\/Singles\/(.*?)\?resultsPage=(\d*)"
-        rPPU = '\(PPU: (.*?)\)'
-        reItemLocation = "'Item location: (.*)'"
-
         editions = MKM.selectEdition()
         cards = []
         q = Queue()
