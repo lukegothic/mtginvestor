@@ -8,6 +8,7 @@ from queue import Queue
 from lxml import html
 import sys
 import phppgadmin
+import math
 
 basecachedir = "__mycache__"
 
@@ -244,6 +245,7 @@ class CK:
 
 class MKM:
     baseurl = "https://www.magiccardmarket.eu"
+    cachedir = "{}/mkm/{}".format(basecachedir, "{}")
     def getEditions():
         editions = []
         offlinecachedir = "__offlinecache__/mkm"
@@ -267,7 +269,7 @@ class MKM:
                 editions.append({
                     "id": relativeurl.replace("/Expansions/", ""),
                     "name": edition.xpath("./div[@class='yearExpansionName']/text()")[0],
-                    "url": MKM.baseurl + relativeurl
+                    "url": MKM.baseurl + relativeurl.replace("/Expansions/", "/Products/Singles/"),
                 })
             if not os.path.exists(offlinecachedir):
                 os.makedirs(offlinecachedir)
@@ -283,5 +285,88 @@ class MKM:
             #sql += " ON CONFLICT (id) DO UPDATE SET name = excluded.name, url = excluded.url"
             phppgadmin.execute(sql)
         return editions
+    def selectEdition():
+        editions = MKM.getEditions()
+        if len(sys.argv) == 2:
+        	s = sys.argv[1]
+        else:
+        	for e in range(0, len(editions)):
+        		edition = editions[e]
+        		print("[{}] {}".format(e, edition["id"]))
+        	s = input("Seleccione # o intro para todas: ")
+        if s != "":
+        	if s == "0":
+        		return []
+        	else:
+        		s = s.split(",")
+        		filterededitions = []
+        		for e in s:
+        			filterededitions.append(editions[(int)(e)])
+        		return filterededitions
+        else:
+        	return editions
     def getCards():
+        def do_work(edition):
+            pagematch = re.match(rPage, edition["url"])
+            if pagematch is None:
+                page = 1
+            else:
+                page = (int)(pagematch.group(2)) + 1
+            print("{} [{}]".format(edition["id"], page))
+            editiondir = MKM.cachedir.format("cards/" + edition["id"])
+            if not os.path.exists(editiondir):
+                os.makedirs(editiondir)
+            editionpagecache = "{}/{}.html".format(editiondir, page)
+            try:
+            	f = open(editionpagecache, "r", encoding="utf8")
+            	data = f.read()
+            	f.close()
+            except IOError:
+                resp = requests.get("{}{}sortBy=number&sortDir=asc&view=list".format(edition["url"], "?" if page == 1 else "&"))
+                data = resp.text
+                # Proteccion contra respuestas vacias, encolamos de nuevo la solicitud
+                if data != "":
+                    with open(editionpagecache, "w", encoding="utf8") as f:
+                        f.write(data)
+                else:
+                    q.put(edition)
+            if data != ""
+                tree = html.fromstring(data)
+                if page == 1:
+                    # procesar resto de paginas de la edicion
+                    total = tree.xpath("//span[@id='hitCountTop']/text()")
+                    if len(total) == 1:
+                        total = math.ceil((int)(total[0]) / cpp)
+                        for pagen in range(2, total + 1):
+                            q.put({ "id": edition["id"], "name": edition["name"], "url": "{}?resultsPage={}".format(edition["url"], pagen - 1) })
+                # procesar cartas
+                htmlcards = tree.xpath("//table[contains(@class,'MKMTable')]/tbody/tr");
+                for c in htmlcards:
+                    cardlinkelement = c.xpath("./td[3]/a")[0]
+                    cardurl = "{}{}".format(MKM.baseurl, cardlinkelement.attrib["href"])
+                    cardid = cardurl[cardurl.rfind("/")+1:]
+                    cardname = cardlinkelement.text_content().replace("'","''")
+                    cards.append(Card(cardid, cardname, edition["id"]))
+        def worker():
+            while True:
+                do_work(q.get())
+                q.task_done()
+        cpp = 30
+        rHash = "#.*"
+        rPage = "https:\/\/www.magiccardmarket.eu\/Products\/Singles\/(.*?)\?resultsPage=(\d*)"
+        rPPU = '\(PPU: (.*?)\)'
+        reItemLocation = "'Item location: (.*)'"
+
+        editions = MKM.selectEdition()
+        cards = []
+        q = Queue()
+        for i in range(4):
+            t = threading.Thread(target=worker)
+            t.daemon = True
+            t.start()
+        for edition in editions:
+            q.put(edition)
+        q.join()
+        return cards
+    def getPrices():
         pass

@@ -47,4 +47,9 @@ import sys
 # phppgadmin.execute(sql[:-1])
 # sys.stdout.write("OK")
 
-MKM.getEditions()
+# TODO: reciclar en el main
+# cards = MKM.getCards()
+# sql = "INSERT INTO mkm_cards(id,name,edition) VALUES"
+# for card in cards:
+#     sql += "('{}','{}','{}'),".format(card.id, card.name.replace("'","''"), card.edition)
+# phppgadmin.execute(sql[:-1])

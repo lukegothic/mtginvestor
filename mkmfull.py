@@ -79,7 +79,6 @@ def do_work(url):
 
 		edition = m.group(1)
 		editiondir = "{}/{}".format(cachedir, edition)
-
 		editionpagecache = "{}/{}.html".format(editiondir, page)
 		try:
 			f = open(editionpagecache, "r", encoding="utf8")
