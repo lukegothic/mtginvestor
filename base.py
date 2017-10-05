@@ -9,6 +9,7 @@ from lxml import html
 import sys
 import phppgadmin
 import math
+import copy
 
 basecachedir = "__mycache__"
 
@@ -71,6 +72,23 @@ class Proxy:
             if proxy["secure"]:
                 secure.append(proxy)
         return secure
+class ExchangeRate:
+    def get(symbol):
+        #TODO: CALCULAR CONVERSION AHORA O MEJOR DESPUES????
+        sys.stdout.write("Obteniendo rate {}...".format(symbol))
+        sys.stdout.flush()
+
+        #req = requests.get("http://finance.yahoo.com/d/quotes.csv?f=l1d1t1&s=USDEUR=X")
+        req = requests.get("http://finance.yahoo.com/d/quotes.csv?f=l1d1t1&s={}".format(symbol))
+        rate = req.text.split(",")
+
+        with open("{}/rate_{}_{}_{}.txt".format(basecachedir, symbol, rate[1].replace("/", "-").replace('"', ""), rate[2].replace("\n", "").replace(":", "").replace('"', "")), "w", encoding="utf8") as f:
+            f.write(rate[0])
+            rate = (float)(rate[0])
+
+        sys.stdout.write("OK [1 = {}]".format(rate))
+        print("")
+        return rate
 class Deckbox:
     cachedir = "{}/deckbox/{}".format(basecachedir, "{}")
     def inventory():
@@ -184,20 +202,6 @@ class CK:
         if not os.path.exists(cachedir):
         	os.makedirs(cachedir)
 
-        #TODO: CALCULAR CONVERSION AHORA O MEJOR DESPUES????
-        sys.stdout.write("Obteniendo rate USD -> EUR...")
-        sys.stdout.flush()
-
-        req = requests.get("http://finance.yahoo.com/d/quotes.csv?f=l1d1t1&s=USDEUR=X")
-        usdeur_rate = req.text.split(",")
-
-        with open("{}/usdeur_rate_{}_{}.txt".format(basecachedir, usdeur_rate[1].replace("/", "-").replace('"', ""), usdeur_rate[2].replace("\n", "").replace(":", "").replace('"', "")), "w", encoding="utf8") as f:
-            f.write(usdeur_rate[0])
-            usdeur_rate = (float)(usdeur_rate[0])
-
-        sys.stdout.write("OK [1 Dollar = {} Euro]".format(usdeur_rate))
-        print("")
-
         baseurl = "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bipp%5D=100&filter%5Bsort%5D=name&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=&filter%5Bcategory_id%5D=0&filter%5Bfoil%5D=1&filter%5Bnonfoil%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=&page="
         reEdition = "(.*)\("
         lock = threading.Lock()
@@ -246,6 +250,7 @@ class CK:
 class MKM:
     baseurl = "https://www.magiccardmarket.eu"
     cachedir = "{}/mkm/{}".format(basecachedir, "{}")
+    maxthreads = 4
     def getEditions():
         editions = []
         offlinecachedir = "__offlinecache__/mkm"
@@ -330,7 +335,7 @@ class MKM:
                         f.write(data)
                 else:
                     q.put(edition)
-            if data != ""
+            if data != "":
                 tree = html.fromstring(data)
                 if page == 1:
                     # procesar resto de paginas de la edicion
@@ -356,7 +361,7 @@ class MKM:
         editions = MKM.selectEdition()
         cards = []
         q = Queue()
-        for i in range(4):
+        for i in range(MKM.maxthreads):
             t = threading.Thread(target=worker)
             t.daemon = True
             t.start()
@@ -364,5 +369,87 @@ class MKM:
             q.put(edition)
         q.join()
         return cards
-    def getPrices():
+    def getPrices(edition=None):
+        def do_work(item):
+            carddir = MKM.cachedir.format("prices/{}/{}".format(edition["id"], item["card"].id))
+            try:
+                if not os.path.exists(carddir):
+                    os.makedirs(carddir)
+            except:
+                pass
+            cardpagecache = "{}/{}.html".format(carddir, "foil" if item["foil"] else "normal")
+            try:
+                f = open(cardpagecache, "r", encoding="utf8")
+                data = f.read()
+                f.close()
+            except IOError:
+                if item["foil"]:
+                    filter = copy.copy(productFilter)
+                    filter["productFilter[isFoil]"] = "Y"
+                else:
+                    filter = productFilter
+                try:
+                    resp = requests.post("{}/Products/Singles/{}/{}".format(MKM.baseurl, item["card"].edition, item["card"].id), filter, headers={}, timeout = 5)
+                    data = resp.text
+                except:
+                    data = ""
+                # Proteccion contra respuestas vacias, encolamos de nuevo la solicitud
+                if data != "":
+                    with open(cardpagecache, "w", encoding="utf8") as f:
+                        f.write(data)
+                else:
+                    print("Me tiran solicitud, relanzo en 2s")
+                    q.put(item, True, 2)
+            if data != "":
+                tree = html.fromstring(data)
+                for row in tree.xpath('//tbody[@id="articlesTable"]/tr[not(@class)]'):
+                    itemlocation = row.xpath(".//td[@class='Seller']/span/span/span[@class='icon']")[0].attrib["onmouseover"]
+                    itemlocation = re.search(reItemLocation, itemlocation).group(1)
+                    seller = row.xpath(".//td[@class='Seller']/span/span/a")[0].attrib["href"].replace("/Users/", "")
+                    price = row.xpath(".//td[contains(@class,'st_price')]")[0].text_content().replace(",",".").replace("€","")
+                    available = row.xpath(".//td[contains(@class,'st_ItemCount')]")[0].text_content()
+                    ppu = re.search(rPPU, price)
+                    if not ppu is None:
+                        price = ppu.group(1)
+                        available = "4"
+                    item["card"].entries.append(CardDetails((float)(price),(int)(available),True if item["foil"] else False, "en", "NM", seller, itemlocation))
+            sys.stdout.write("Elementos restantes: %d   \r" % q.qsize())
+            sys.stdout.flush()
+        def worker():
+            while True:
+                do_work(q.get())
+                q.task_done()
+        if (edition is None):
+            editions = MKM.selectEdition()
+        else:
+            editions = [edition]
+        sql = "SELECT id, name, edition FROM mkm_cards"
+        if (len(editions) == 1):
+            sql += " WHERE edition = '{}'".format(editions[0]["id"])
+        dbcards = phppgadmin.query(sql)
+        q = Queue()
+        for i in range(MKM.maxthreads):
+            t = threading.Thread(target=worker)
+            t.daemon = True
+            t.start()
+        cards = []
+        productFilter = { "productFilter[sellerRatings][]": ["1", "2"], "productFilter[idLanguage][]": [1], "productFilter[condition][]": ["MT", "NM"] }
+        rPPU = '\(PPU: (.*?)\)'
+        reItemLocation = "'Item location: (.*)'"
+        for dbcard in dbcards:
+            card = InventoryCard(dbcard["id"], dbcard["name"], dbcard["edition"])
+            cards.append(card)
+            q.put({ "card": card, "foil": False })
+            q.put({ "card": card, "foil": True })
+        q.join()
+        print("==[     END     ]==   ")
+        return cards
+class Gatherer:
+    def getEditions():
+        return phppgadmin.query("SELECT code as id, name, code_ck, code_mkm FROM editions")
+    def normalizeEditions():
+        print("TOTAL", len(phppgadmin.query("SELECT code FROM editions")))
+        print("CK UPDATES", phppgadmin.execute("UPDATE editions SET code_ck = ck.id FROM ck_editions ck WHERE lower(ck.name) = lower(editions.name)"))
+        print("MKM UPDATES", phppgadmin.execute("UPDATE editions SET code_mkm = mkm.id FROM mkm_editions mkm WHERE lower(mkm.name) = lower(editions.name)"))
+    def normalizeCards():
         pass

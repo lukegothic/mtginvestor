@@ -1,15 +1,5 @@
 ediciones CK --> MASTER
 
-UPDATE editions
-SET code_ck = ck.id
-FROM ck_editions ck
-WHERE lower(ck.name) = lower(editions.name)
-
-UPDATE editions
-SET code_mkm = mkm.id
-FROM mkm_editions mkm
-WHERE lower(mkm.name) = lower(editions.name)
-
 RESTO A MANO-->
 
 UPDATE editions SET code_ck = 2420	WHERE code = 'BR';

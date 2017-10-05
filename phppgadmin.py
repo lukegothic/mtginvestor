@@ -1,12 +1,14 @@
 import requests
 from lxml import html
+import re
 
 g_session = None
 g_debug = False
 c_server = {
     "ip": "fotoraton.es",
     "port": "8080",
-    "pgport": "5432"
+    "pgport": "5432",
+    "db": "magic"
 }
 
 def connect():
@@ -36,7 +38,13 @@ def execute(sql):
         with open("phppgadmin_lastquery.html", "w") as f:
             f.write(response.text)
             f.write(sql)
-    return response
+    tree = html.fromstring(response.content)
+    error = tree.xpath("//pre/text()")
+    if (len(error) > 0):
+        return error[0]
+    else:
+        results = tree.xpath("//body/p[1]/text()")[0]
+        return (int)(re.match("\d*", results).group(0))
 def query(sql):
     #TODO: detectar si la sesion se ha caido
     if g_session is None:

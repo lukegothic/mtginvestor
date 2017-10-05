@@ -1,11 +1,13 @@
 from base import CK
 from base import MKM
+from base import Gatherer
 from queue import Queue
 import threading
 import requests
 from base import Proxy
 import phppgadmin
 import sys
+from lxml import html
 
 # proxies = Proxy.getSecure()
 #
@@ -53,3 +55,34 @@ import sys
 # for card in cards:
 #     sql += "('{}','{}','{}'),".format(card.id, card.name.replace("'","''"), card.edition)
 # phppgadmin.execute(sql[:-1])
+
+#TODO: MOVER A MENU (obtener precios mkm)
+editions = MKM.getEditions()
+for edition in editions:
+    # TODO: controlamos si ya tenemos precios, se puede hacer que solo se controlen precio no actualizados y borrar precios antiguos
+    print(edition["name"])
+    cnt = phppgadmin.query("select count(*) as c from mkm_cardprices where edition = '{}'".format(edition["id"]))
+    if (cnt[0]["c"] == "0"):
+        cards = MKM.getPrices(edition)
+        sql = ""
+        for card in cards:
+            normalcnt = 0
+            foilcnt = 0
+            #TODO: ignorar falsos positivos de cartas foil de ediciones que no tienen foil
+            for entry in card.entries:
+                if (entry.foil):
+                    foilcnt += 1
+                else:
+                    normalcnt += 1
+                sql += "('{}','{}',{},{},{},'{}','{}'),".format(card.id, card.edition, entry.price, entry.foil, entry.count, entry.seller.replace("'","''"), entry.location)
+            #print("{} [{}|{}*]".format(card.name, normalcnt, foilcnt))
+        if sql != "":
+            affected = phppgadmin.execute("INSERT INTO mkm_cardprices(card,edition,price,foil,available,seller,itemlocation) VALUES" + sql[:-1])
+            print("Total prices inserted: {}".format(affected))
+        else:
+            print("No price data")
+    else:
+        print("Data is present")
+
+#ver precios agrupados
+#select c.edition, c.name, p.foil, min(price), sum(available) from mkm_cards c left join mkm_cardprices p on c.edition = p.edition and c.id = p.card where c.edition = 'Alara+Reborn' group by c.name, c.edition, p.foil order by sum(available) asc
