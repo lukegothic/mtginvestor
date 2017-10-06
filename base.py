@@ -159,7 +159,7 @@ class CK:
                         print("Edicion no encontrada", edition, name)
                         edition = 0
                     price = "{}.{}".format(pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
-                    price = round((float)(price) * usdeur_rate, 2)
+                    #price = round((float)(price) * usdeur_rate, 2)
                     # credit = "{}.{}".format(pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
                     # el credit se puede sacar multiplicando por 1.3
                     maxQty = pricewrapper.xpath('.//form/input[@class="maxQty"]')[0].attrib["value"];
@@ -389,7 +389,7 @@ class MKM:
                 else:
                     filter = productFilter
                 try:
-                    resp = requests.post("{}/Products/Singles/{}/{}".format(MKM.baseurl, item["card"].edition, item["card"].id), filter, headers={}, timeout = 5)
+                    resp = requests.post("{}/Products/Singles/{}/{}".format(MKM.baseurl, item["card"].edition, item["card"].id), filter, headers={}, timeout = 10)
                     data = resp.text
                 except:
                     data = ""
@@ -398,8 +398,8 @@ class MKM:
                     with open(cardpagecache, "w", encoding="utf8") as f:
                         f.write(data)
                 else:
-                    print("Me tiran solicitud, relanzo en 2s")
-                    q.put(item, True, 2)
+                    print("Me tiran solicitud, relanzo en 10s")
+                    q.put(item, True, 10)
             if data != "":
                 tree = html.fromstring(data)
                 for row in tree.xpath('//tbody[@id="articlesTable"]/tr[not(@class)]'):
@@ -439,6 +439,7 @@ class MKM:
         for dbcard in dbcards:
             card = InventoryCard(dbcard["id"], dbcard["name"], dbcard["edition"])
             cards.append(card)
+            #TODO: mejora: pedir foil solo cuando existe foil
             q.put({ "card": card, "foil": False })
             q.put({ "card": card, "foil": True })
         q.join()

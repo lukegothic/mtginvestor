@@ -161,7 +161,7 @@ def saveData(edition):
 	with open(pricesfile, "w", encoding="utf8") as f:
 		f.write(pricesql[:-1])
 
-	phppgadmin.execute(cardsql[:-1])
+	#phppgadmin.execute(cardsql[:-1])
 	phppgadmin.execute(pricesql[:-1])
 
 q = Queue()
