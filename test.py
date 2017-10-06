@@ -57,6 +57,7 @@ import time
 # phppgadmin.execute(sql[:-1])
 
 #TODO: MOVER A MENU (obtener precios mkm)
+#TODO: CADA 5000 solicitudes, hacer una pausa
 editions = MKM.getEditions()
 for edition in editions:
     #TODO: controlamos si ya tenemos precios, se puede hacer que solo se controlen precio no actualizados y borrar precios antiguos
@@ -79,7 +80,7 @@ for edition in editions:
         if sql != "":
             affected = phppgadmin.execute("INSERT INTO mkm_cardprices(card,edition,price,foil,available,seller,itemlocation) VALUES" + sql[:-1])
             print("Total prices inserted: {}".format(affected))
-            time.sleep(60)
+            time.sleep(120)
         else:
             print("No price data")
     else:
