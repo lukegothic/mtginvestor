@@ -1,3 +1,3 @@
 chcp 65001
-python test.py
+python main.py
 pause

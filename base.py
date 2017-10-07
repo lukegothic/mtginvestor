@@ -117,6 +117,38 @@ class Deckbox:
         return inventory
 class CK:
     cachedir = "{}/ck/{}".format(basecachedir, "{}")
+    def crawlEditions():
+        def do_work(edition):
+            sys.stdout.write("Ediciones restantes: %d   \r" % q.qsize())
+            sys.stdout.flush()
+            page = requests.get(edition["url"])
+            edition["url"] = page.url
+        def worker():
+        	while True:
+        		do_work(q.get())
+        		q.task_done()
+        q = Queue()
+        for i in range(8):
+        	t = threading.Thread(target=worker)
+        	t.daemon = True
+        	t.start()
+        baseurl = "www.cardkingdom.com/catalog/view/"
+        page = requests.get("http://www.cardkingdom.com/catalog/magic_the_gathering/by_az")
+        tree = html.fromstring(page.text)
+        editions = []
+        for link in tree.xpath("//a[contains(@href,'" + baseurl + "')]"):
+            #TODO: dejar de depender de IDs...por el bien de la humanidad
+            href = link.attrib["href"]
+            edition = { "id": href[href.rfind("/")+1:], "name": link.text.replace("'", "''"), "url": href }
+            editions.append(edition)
+            q.put(edition)
+        q.join()
+        print("")
+        sql = "DELETE FROM ck_editions;INSERT INTO ck_editions(id,name,url) VALUES"
+        for edition in editions:
+            sql += "({},'{}','{}'),".format(edition["id"], edition["name"], edition["url"])
+        print(" {} ediciones almacenadas".format(phppgadmin.execute(sql[:-1])))
+        return editions
     def getEditions():
         editions = []
         try:
@@ -129,8 +161,7 @@ class CK:
                 for row in reader:
                     editions.append(row)
         if (len(editions) == 0):
-            #TODO: integrar con proceso de solicitud de ediciones!
-            pass
+            CK.crawlEditions()
         return editions
     def buylist(writecsv=False):
         #TODO: numero dinamico de paginas
@@ -244,13 +275,40 @@ class CK:
         print("==[     END     ]==")
 
         return buylist
-    def store():
+    def inventory():
         pass
-
 class MKM:
     baseurl = "https://www.magiccardmarket.eu"
     cachedir = "{}/mkm/{}".format(basecachedir, "{}")
-    maxthreads = 4
+    maxthreads = 6
+    maxrequestnum = 1000
+    requestnum = 0
+    sleeping = False
+    def crawlEditions():
+        page = requests.get(MKM.baseurl + "/Expansions")
+        tree = html.fromstring(page.text)
+        xpatheditions = tree.xpath("//a[@class='alphabeticExpansion']")
+        for edition in xpatheditions:
+            relativeurl = edition.attrib["href"]
+            editions.append({
+                "id": relativeurl.replace("/Expansions/", ""),
+                "name": edition.xpath("./div[@class='yearExpansionName']/text()")[0],
+                "url": MKM.baseurl + relativeurl.replace("/Expansions/", "/Products/Singles/"),
+            })
+        if not os.path.exists(offlinecachedir):
+            os.makedirs(offlinecachedir)
+        sql = "DELETE FROM mkm_editions;INSERT INTO mkm_editions(id,name,url) VALUES"
+        with open(offlinecachefile, "w", newline='\n') as f:
+            writer = csv.DictWriter(f, fieldnames=["id", "name", "url"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            writer.writeheader()
+            for edition in editions:
+                writer.writerow({ "id": edition["id"], "name": edition["name"], "url": edition["url"] })
+                sql += "('{}','{}','{}'),".format(edition["id"], edition["name"].replace("'", "''"), edition["url"])
+        sql = sql[:-1]
+        #TODO: Actualizar PG a 9.5++
+        #sql += " ON CONFLICT (id) DO UPDATE SET name = excluded.name, url = excluded.url"
+        print(phppgadmin.execute(sql))
+        return editions
     def getEditions():
         editions = []
         offlinecachedir = "__offlinecache__/mkm"
@@ -266,29 +324,7 @@ class MKM:
             except:
                 pass
         if (len(editions) == 0):
-            page = requests.get(MKM.baseurl + "/Expansions")
-            tree = html.fromstring(page.text)
-            xpatheditions = tree.xpath("//a[@class='alphabeticExpansion']")
-            for edition in xpatheditions:
-                relativeurl = edition.attrib["href"]
-                editions.append({
-                    "id": relativeurl.replace("/Expansions/", ""),
-                    "name": edition.xpath("./div[@class='yearExpansionName']/text()")[0],
-                    "url": MKM.baseurl + relativeurl.replace("/Expansions/", "/Products/Singles/"),
-                })
-            if not os.path.exists(offlinecachedir):
-                os.makedirs(offlinecachedir)
-            sql = "INSERT INTO mkm_editions(id,name,url) VALUES"
-            with open(offlinecachefile, "w", newline='\n') as f:
-                writer = csv.DictWriter(f, fieldnames=["id", "name", "url"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                writer.writeheader()
-                for edition in editions:
-                    writer.writerow({ "id": edition["id"], "name": edition["name"], "url": edition["url"] })
-                    sql += "('{}','{}','{}'),".format(edition["id"], edition["name"].replace("'", "''"), edition["url"])
-            sql = sql[:-1]
-            #TODO: Actualizar PG a 9.5++
-            #sql += " ON CONFLICT (id) DO UPDATE SET name = excluded.name, url = excluded.url"
-            phppgadmin.execute(sql)
+            editions = MKM.crawlEditions()
         return editions
     def selectEdition():
         editions = MKM.getEditions()
@@ -389,6 +425,7 @@ class MKM:
                 else:
                     filter = productFilter
                 try:
+                    MKM.requestnum += 1
                     resp = requests.post("{}/Products/Singles/{}/{}".format(MKM.baseurl, item["card"].edition, item["card"].id), filter, headers={}, timeout = 10)
                     data = resp.text
                 except:
@@ -417,15 +454,21 @@ class MKM:
             sys.stdout.flush()
         def worker():
             while True:
-                do_work(q.get())
-                q.task_done()
+                if MKM.requestnum >= MKM.maxrequestnum:
+                    MKM.requestnum = 0
+                    MKM.sleeping = True
+                    time.sleep(120)
+                    MKM.sleeping = False
+                if not MKM.sleeping:
+                    do_work(q.get())
+                    q.task_done()
         if (edition is None):
             editions = MKM.selectEdition()
         else:
             editions = [edition]
-        sql = "SELECT id, name, edition FROM mkm_cards"
+        sql = "select c.id as id, c.name as name, c.edition as edition, e.type as type from editions e left join mkm_cards c on c.edition = e.code_mkm where not e.code_mkm is null"
         if (len(editions) == 1):
-            sql += " WHERE edition = '{}'".format(editions[0]["id"])
+            sql += " AND c.edition = '{}'".format(editions[0]["id"])
         dbcards = phppgadmin.query(sql)
         q = Queue()
         for i in range(MKM.maxthreads):
@@ -439,9 +482,9 @@ class MKM:
         for dbcard in dbcards:
             card = InventoryCard(dbcard["id"], dbcard["name"], dbcard["edition"])
             cards.append(card)
-            #TODO: mejora: pedir foil solo cuando existe foil
             q.put({ "card": card, "foil": False })
-            q.put({ "card": card, "foil": True })
+            if dbcard["type"] == "3":
+                q.put({ "card": card, "foil": True })
         q.join()
         print("==[     END     ]==   ")
         return cards

@@ -43,8 +43,11 @@ def execute(sql):
     if (len(error) > 0):
         return error[0]
     else:
-        results = tree.xpath("//body/p[1]/text()")[0]
-        return (int)(re.match("\d*", results).group(0))
+        try:
+            results = tree.xpath("//body/p[1]/text()")[0]
+            return (int)(re.match("\d*", results).group(0))
+        except:
+            return 0
 def query(sql):
     #TODO: detectar si la sesion se ha caido
     if g_session is None:

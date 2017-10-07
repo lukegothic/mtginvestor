@@ -104,19 +104,4 @@ for edition in editions:
 	print(edition.attrib["href"].replace("Expansions","Products/Singles"))
 	#q.put(edition.attrib["href"].replace("Expansions","Products/Singles"))
 
-'''
-https://www.magiccardmarket.eu/Products/Singles/Alara+Reborn
-https://www.magiccardmarket.eu/Products/Singles/Alara+Reborn?resultsPage=4
-https://www.magiccardmarket.eu/Products/Singles/Alara+Reborn/Talon+Trooper
-'''
-'''
-for i in range(6):
-	t = threading.Thread(target=worker)
-	t.daemon = True
-	t.start()
-
-start = time.perf_counter()
-
-q.join()
-'''
 print('time:',time.perf_counter() - start)

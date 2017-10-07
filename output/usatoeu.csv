@@ -1,0 +1,625 @@
+name;edition;foil;ck;mkm;diff;pct
+Thopter Foundry;Alara+Reborn;FALSE;0.298305;0.432;-0.133695;0,690520833
+Horror of the Broken Lands;Amonkhet;TRUE;1.696.077;2.52;-0.823923;0,673046429
+Martyrs of Korlis;Antiquities;FALSE;2.974.527;5.391;-2.416.473;0,55175793
+Weakstone;Antiquities;FALSE;5.105.277;8.1;-2.994.723;0,630281111
+Su-Chi;Antiquities;FALSE;23.003.577;34.2;-11.196.423;0,672619211
+Artifact Blast;Antiquities;FALSE;0.213075;0.27;-0.056925;0,789166667
+Standard Bearer;Apocalypse;TRUE;2.548.377;4.5;-1.951.623;0,566306
+Gaea's Balance;Apocalypse;TRUE;0.298305;0.45;-0.151695;0,6629
+Whirlpool Rider;Apocalypse;TRUE;2.122.227;3.15;-1.027.773;0,673722857
+Yavimaya's Embrace;Apocalypse;TRUE;1.269.927;1.8;-0.530073;0,705515
+Savage Gorilla;Apocalypse;TRUE;0.332397;0.45;-0.117603;0,73866
+Camel;Arabian+Nights;FALSE;0.502857;1.125;-0.622143;0,446984
+Desert Nomads;Arabian+Nights;FALSE;0.502857;0.9;-0.397143;0,55873
+Elephant Graveyard;Arabian+Nights;FALSE;106.528.977;134.1;-27.571.023;0,79439953
+Painful Truths;Battle+for+Zendikar;TRUE;1.269.927;2.61;-1.340.073;0,486562069
+Yomiji, Who Bars the Way;Betrayers+of+Kamigawa;TRUE;5.957.577;13.41;-7.452.423;0,444263758
+Gods' Eye, Gate to the Reikai;Betrayers+of+Kamigawa;TRUE;2.548.377;4.491;-1.942.623;0,567440882
+Patron of the Moon;Betrayers+of+Kamigawa;TRUE;13.628.277;22.5;-8.871.723;0,6057012
+Shizuko, Caller of Autumn;Betrayers+of+Kamigawa;TRUE;4.252.977;6.255;-2.002.023;0,679932374
+Honor-Worn Shaku;Champions+of+Kamigawa;TRUE;5.105.277;7.065;-1.959.723;0,722615287
+Untaidake, the Cloud Keeper;Champions+of+Kamigawa;TRUE;17.037.477;22.491;-5.453.523;0,75752421
+Thopter Foundry;Commander+2013;FALSE;0.298305;0.432;-0.133695;0,690520833
+Righteous Confluence;Commander+2015;FALSE;0.213075;0.36;-0.146925;0,591875
+Thopter Foundry;Commander+2016;FALSE;0.298305;0.432;-0.133695;0,690520833
+Magus of the Mind;Commander+2017;FALSE;0.298305;0.585;-0.286695;0,509923077
+Fleecemane Lion;Commander+2017;FALSE;0.213075;0.36;-0.146925;0,591875
+Stirring Wildwood;Commander+2017;FALSE;0.332397;0.45;-0.117603;0,73866
+Ill-Gotten Gains;Conspiracy;TRUE;0.843777;1.26;-0.416223;0,669664286
+Lore Seeker;Conspiracy;TRUE;3.400.677;4.491;-1.090.323;0,757220441
+Palace Sentinels;Conspiracy%3A+Take+the+Crown;TRUE;0.417627;7.155;-6.737.373;0,058368553
+Thorn of the Black Rose;Conspiracy%3A+Take+the+Crown;TRUE;1.269.927;7.155;-5.885.073;0,17748805
+Stormbound Geist;Dark+Ascension;TRUE;2.122.227;3.528;-1.405.773;0,601538265
+Haunted Fengraf;Dark+Ascension;TRUE;1.696.077;2.691;-0.994923;0,630277592
+Drogskol Captain;Dark+Ascension;FALSE;0.502857;0.63;-0.127143;0,798185714
+Ruric Thar, the Unbowed;Dragon%27s+Maze;TRUE;0.843777;1.8;-0.956223;0,468765
+Foul-Tongue Invocation;Dragons+of+Tarkir;TRUE;0.298305;0.405;-0.106695;0,736555556
+Zombify;Eighth+Edition;TRUE;0.417627;0.693;-0.275373;0,602636364
+Fyndhorn Elder;Eighth+Edition;TRUE;0.417627;0.585;-0.167373;0,713892308
+Malicious Affliction;Eternal+Masters;TRUE;1.696.077;2.655;-0.958923;0,638823729
+Rally the Ancestors;Fate+Reforged;TRUE;0.843777;1.305;-0.461223;0,646572414
+Order of the Stars;Guildpact;TRUE;0.417627;0.612;-0.194373;0,682397059
+Nephalia Drownyard;Innistrad;TRUE;0.843777;1.557;-0.713223;0,541924855
+Harvest Pyre;Innistrad;TRUE;0.298305;0.45;-0.151695;0,6629
+Winnow;Invasion;TRUE;1.696.077;49.05;-47.353.923;0,034578532
+Desperate Research;Invasion;TRUE;1.269.927;11.655;-10.385.073;0,108959846
+Stormscape Apprentice;Invasion;TRUE;0.298305;0.711;-0.412695;0,419556962
+Stormscape Master;Invasion;TRUE;1.269.927;2.925;-1.655.073;0,434163077
+Glimmering Angel;Invasion;TRUE;0.673317;1.539;-0.865683;0,437502924
+Sulfur Vent;Invasion;TRUE;0.417627;0.891;-0.473373;0,468717172
+Tigereye Cameo;Invasion;TRUE;0.417627;0.891;-0.473373;0,468717172
+Spreading Plague;Invasion;TRUE;12.775.977;27;-14.224.023;0,473184333
+Coalition Victory;Invasion;TRUE;3.826.827;7.65;-3.823.173;0,500238824
+Manipulate Fate;Invasion;FALSE;0.673317;1.305;-0.631683;0,515951724
+Backlash;Invasion;TRUE;0.843777;1.575;-0.731223;0,535731429
+Stalking Assassin;Invasion;TRUE;0.843777;1.341;-0.497223;0,629214765
+Prohibit;Invasion;TRUE;2.122.227;3.321;-1.198.773;0,63903252
+Sunscape Master;Invasion;TRUE;0.843777;1.305;-0.461223;0,646572414
+Tsabo Tavoc;Invasion;TRUE;12.775.977;17.541;-4.765.023;0,72834941
+Crypt Angel;Invasion;TRUE;12.775.977;16.65;-3.874.023;0,767325946
+Phyrexian Delver;Invasion;TRUE;13.628.277;17.082;-3.453.723;0,797815068
+Prophetic Flamespeaker;Journey+into+Nyx;TRUE;2.974.527;4.32;-1.345.473;0,688547917
+Dwarven Bloodboiler;Judgment;TRUE;2.122.227;9;-6.877.773;0,235803
+Filth;Judgment;TRUE;5.105.277;16.2;-11.094.723;0,315140556
+Anurid Brushhopper;Judgment;TRUE;1.269.927;2.16;-0.890073;0,587929167
+Imperial Hellkite;Legions;TRUE;2.122.227;3.15;-1.027.773;0,673722857
+Merfolk Sovereign;Magic+2011;TRUE;0.843777;1.35;-0.506223;0,62502
+Ember Hauler;Magic+2011;TRUE;0.417627;0.63;-0.212373;0,6629
+Jace's Archivist;Magic+2012;TRUE;4.252.977;7.101;-2.848.023;0,598926489
+Intrepid Hero;Magic+2013;TRUE;0.843777;1.44;-0.596223;0,58595625
+Door to Nothingness;Magic+2013;TRUE;5.105.277;7.155;-2.049.723;0,713525786
+Witchstalker;Magic+2014;TRUE;0.843777;1.287;-0.443223;0,655615385
+Rise of the Dark Realms;Magic+2014;TRUE;21.298.977;26.991;-5.692.023;0,789114038
+Reclamation Sage;Magic+2015;TRUE;14.480.577;36;-21.519.423;0,40223825
+Sunblade Elf;Magic+2015;TRUE;0.417627;0.675;-0.257373;0,618706667
+Return to the Ranks;Magic+2015;TRUE;1.269.927;1.791;-0.521073;0,709060302
+Ensoul Artifact;Magic+2015;FALSE;0.502857;0.666;-0.163143;0,755040541
+Radiant Fountain;Magic+2015;TRUE;2.122.227;2.691;-0.568773;0,788638796
+Vryn Wingmare;Magic+Origins;TRUE;0.843777;1.62;-0.776223;0,52085
+Molten Vortex;Magic+Origins;TRUE;1.269.927;1.8;-0.530073;0,705515
+Saprazzan Skerry;Mercadian+Masques;TRUE;2.974.527;36;-33.025.473;0,08262575
+Devout Witness;Mercadian+Masques;TRUE;0.417627;1.197;-0.779373;0,348894737
+False Demise;Mercadian+Masques;TRUE;0.502857;1.368;-0.865143;0,367585526
+Rishadan Brigand;Mercadian+Masques;TRUE;28.117.377;67.95;-39.832.623;0,413795099
+Assembly Hall;Mercadian+Masques;TRUE;0.843777;1.8;-0.956223;0,468765
+Territorial Dispute;Mercadian+Masques;TRUE;0.843777;1.791;-0.947223;0,471120603
+Rishadan Cutpurse;Mercadian+Masques;TRUE;8.514.477;17.982;-9.467.523;0,4735
+Sailmonger;Mercadian+Masques;TRUE;0.298305;0.612;-0.313695;0,487426471
+Crag Saurian;Mercadian+Masques;TRUE;0.843777;1.71;-0.866223;0,493436842
+Clear the Land;Mercadian+Masques;TRUE;1.696.077;3.231;-1.534.923;0,524938719
+Soothsaying;Mercadian+Masques;TRUE;23.855.877;44.982;-21.126.123;0,530342737
+Delraich;Mercadian+Masques;FALSE;0.298305;0.531;-0.232695;0,561779661
+Cateran Slaver;Mercadian+Masques;TRUE;1.269.927;2.241;-0.971073;0,566678715
+Cho-Arrim Bruiser;Mercadian+Masques;TRUE;1.269.927;2.241;-0.971073;0,566678715
+War Tax;Mercadian+Masques;TRUE;5.105.277;8.775;-3.669.723;0,581797949
+Deepwood Tantiv;Mercadian+Masques;TRUE;0.298305;0.495;-0.196695;0,602636364
+Flailing Manticore;Mercadian+Masques;TRUE;0.843777;1.35;-0.506223;0,62502
+Unnatural Hunger;Mercadian+Masques;TRUE;0.843777;1.35;-0.506223;0,62502
+Security Detail;Mercadian+Masques;TRUE;0.843777;1.35;-0.506223;0,62502
+Saprazzan Bailiff;Mercadian+Masques;TRUE;0.843777;1.341;-0.497223;0,629214765
+Brawl;Mercadian+Masques;TRUE;0.843777;1.314;-0.470223;0,642143836
+Magistrate's Veto;Mercadian+Masques;TRUE;0.298305;0.45;-0.151695;0,6629
+Venomous Breath;Mercadian+Masques;TRUE;0.298305;0.45;-0.151695;0,6629
+Rushwood Legate;Mercadian+Masques;TRUE;0.298305;0.45;-0.151695;0,6629
+Tonic Peddler;Mercadian+Masques;TRUE;0.417627;0.63;-0.212373;0,6629
+Strongarm Thug;Mercadian+Masques;TRUE;0.417627;0.621;-0.203373;0,672507246
+Forced March;Mercadian+Masques;TRUE;2.548.377;3.78;-1.231.623;0,67417381
+Bog Witch;Mercadian+Masques;TRUE;0.298305;0.441;-0.142695;0,676428571
+Timid Drake;Mercadian+Masques;TRUE;0.298305;0.441;-0.142695;0,676428571
+Lithophage;Mercadian+Masques;TRUE;0.843777;1.215;-0.371223;0,694466667
+Tooth of Ramos;Mercadian+Masques;TRUE;2.548.377;3.6;-1.051.623;0,7078825
+Tectonic Break;Mercadian+Masques;TRUE;7.662.177;10.8;-3.137.823;0,709460833
+Crumbling Sanctuary;Mercadian+Masques;TRUE;2.548.377;3.537;-0.988623;0,720491094
+Horn of Plenty;Mercadian+Masques;TRUE;1.525.617;2.115;-0.589383;0,721331915
+Cave-In;Mercadian+Masques;TRUE;4.252.977;5.85;-1.597.023;0,727004615
+Rushwood Elemental;Mercadian+Masques;TRUE;2.974.527;4.041;-1.066.473;0,73608686
+Cackling Witch;Mercadian+Masques;TRUE;0.298305;0.405;-0.106695;0,736555556
+Crash;Mercadian+Masques;TRUE;0.298305;0.405;-0.106695;0,736555556
+Enslaved Horror;Mercadian+Masques;TRUE;0.298305;0.405;-0.106695;0,736555556
+Horn of Ramos;Mercadian+Masques;TRUE;2.974.527;4.014;-1.039.473;0,741038117
+Henge of Ramos;Mercadian+Masques;TRUE;0.502857;0.675;-0.172143;0,744973333
+Afterlife;Mercadian+Masques;TRUE;0.843777;1.125;-0.281223;0,750024
+Fountain of Cho;Mercadian+Masques;TRUE;0.843777;1.125;-0.281223;0,750024
+Mercadian Lift;Mercadian+Masques;TRUE;1.696.077;2.241;-0.544923;0,756839357
+Worry Beads;Mercadian+Masques;TRUE;1.696.077;2.241;-0.544923;0,756839357
+Spiritual Focus;Mercadian+Masques;TRUE;1.696.077;2.241;-0.544923;0,756839357
+Crackdown;Mercadian+Masques;TRUE;23.855.877;31.491;-763.512.300.000.001;0,75754587
+Rishadan Footpad;Mercadian+Masques;TRUE;13.628.277;17.982;-4.353.723;0,757884384
+Aerial Caravan;Mercadian+Masques;TRUE;1.269.927;1.647;-0.377073;0,771054645
+Reverent Mantra;Mercadian+Masques;TRUE;3.826.827;4.95;-1.123.173;0,773096364
+Megatherium;Mercadian+Masques;TRUE;1.269.927;1.62;-0.350073;0,783905556
+Ley Line;Mercadian+Masques;TRUE;0.332397;0.423;-0.090603;0,785808511
+Sustenance;Mercadian+Masques;TRUE;0.298305;0.378;-0.079695;0,789166667
+Toymaker;Mercadian+Masques;TRUE;0.298305;0.378;-0.079695;0,789166667
+Foster;Mercadian+Masques;TRUE;2.122.227;2.655;-0.532773;0,799332203
+Quicksilver Elemental;Mirrodin;TRUE;2.122.227;7.281;-5.158.773;0,29147466
+Phyresis;Mirrodin+Besieged;TRUE;2.548.377;3.555;-1.006.623;0,716843038
+Accorder Paladin;Mirrodin+Besieged;TRUE;0.843777;1.161;-0.317223;0,726767442
+Mirrorworks;Mirrodin+Besieged;TRUE;3.400.677;4.5;-1.099.323;0,755706
+Wolf-Skull Shaman;Morningtide;TRUE;0.673317;0.891;-0.217683;0,755686869
+Bramblewood Paragon;Morningtide;TRUE;2.122.227;2.7;-0.577773;0,78601
+Seal of Removal;Nemesis;TRUE;0.417627;0.891;-0.473373;0,468717172
+Pale Moon;Nemesis;TRUE;4.252.977;6.3;-2.047.023;0,675075714
+Rath's Edge;Nemesis;TRUE;2.122.227;2.691;-0.568773;0,788638796
+Booby Trap;Ninth+Edition;TRUE;1.696.077;2.7;-1.003.923;0,628176667
+Rootbreaker Wurm;Ninth+Edition;TRUE;0.332397;0.441;-0.108603;0,753734694
+Sanctum Guardian;Ninth+Edition;TRUE;0.332397;0.441;-0.108603;0,753734694
+Anaconda;Ninth+Edition;TRUE;0.673317;0.846;-0.172683;0,795882979
+Pulse of Murasa;Oath+of+the+Gatewatch;TRUE;1.269.927;1.8;-0.530073;0,705515
+Divert;Odyssey;FALSE;0.673317;1.125;-0.451683;0,598504
+Cabal Pit;Odyssey;TRUE;5.105.277;8.1;-2.994.723;0,630281111
+Delaying Shield;Odyssey;TRUE;5.105.277;8.091;-2.985.723;0,630982202
+Pardic Miner;Odyssey;TRUE;0.843777;1.251;-0.407223;0,674482014
+Cantivore;Odyssey;TRUE;1.269.927;1.791;-0.521073;0,709060302
+Dwarven Recruiter;Odyssey;TRUE;4.252.977;5.841;-1.588.023;0,728124807
+Wayward Angel;Odyssey;TRUE;3.826.827;4.95;-1.123.173;0,773096364
+Beast Attack;Odyssey;TRUE;0.298305;0.378;-0.079695;0,789166667
+Dragon Roost;Onslaught;TRUE;1.696.077;3.033;-1.336.923;0,559207715
+Supreme Inquisitor;Onslaught;TRUE;6.809.877;8.991;-2.181.123;0,75741041
+Boneknitter;Onslaught;TRUE;0.417627;0.54;-0.122373;0,773383333
+Magus of the Coffers;Planar+Chaos;TRUE;8.514.477;13.5;-4.985.523;0,630702
+Dawn Charm;Planar+Chaos;TRUE;3.826.827;5.391;-1.564.173;0,709854758
+Ovinize;Planar+Chaos;TRUE;0.673317;0.855;-0.181683;0,787505263
+Horned Kavu;Planeshift;TRUE;0.843777;1.8;-0.956223;0,468765
+Arctic Merfolk;Planeshift;TRUE;3.826.827;8.1;-4.273.173;0,472447778
+Primal Growth;Planeshift;TRUE;7.662.177;10.35;-2.687.823;0,740306957
+Forked Lightning;Portal;FALSE;0.588087;1.746;-1.157.913;0,336819588
+Thundering Wurm;Portal;FALSE;0.502857;1.08;-0.577143;0,465608333
+Stern Marshal;Portal;FALSE;0.298305;0.612;-0.313695;0,487426471
+Pillaging Horde;Portal;FALSE;0.298305;0.54;-0.241695;0,552416667
+Dread Reaper;Portal;FALSE;0.298305;0.45;-0.151695;0,6629
+Spiritual Guardian;Portal;FALSE;0.588087;0.81;-0.221913;0,726033333
+Nature's Ruin;Portal;FALSE;0.502857;0.675;-0.172143;0,744973333
+Wicked Pact;Portal;FALSE;0.673317;0.882;-0.208683;0,763397959
+Dread Charge;Portal;FALSE;0.588087;0.765;-0.176913;0,768741176
+Just Fate;Portal+Second+Age;FALSE;0.332397;1.08;-0.747603;0,307775
+Nightstalker Engine;Portal+Second+Age;FALSE;0.332397;0.675;-0.342603;0,49244
+Bargain;Portal+Second+Age;FALSE;0.298305;0.531;-0.232695;0,561779661
+Dakmor Plague;Portal+Second+Age;FALSE;0.213075;0.351;-0.137925;0,607051282
+Sylvan Yeti;Portal+Second+Age;FALSE;0.843777;1.341;-0.497223;0,629214765
+Return of the Nightstalkers;Portal+Second+Age;FALSE;0.298305;0.432;-0.133695;0,690520833
+Corrupt Court Official;Portal+Three+Kingdoms;FALSE;4.252.977;6.3;-2.047.023;0,675075714
+Zodiac Rat;Portal+Three+Kingdoms;FALSE;5.957.577;7.83;-1.872.423;0,760865517
+Spore Frog;Prophecy;TRUE;17.037.477;45;-27.962.523;0,3786106
+Chimeric Idol;Prophecy;TRUE;0.332397;0.81;-0.477603;0,410366667
+Mungha Wurm;Prophecy;TRUE;0.843777;1.71;-0.866223;0,493436842
+Abolish;Prophecy;TRUE;1.269.927;2.25;-0.980073;0,564412
+Shrouded Serpent;Prophecy;TRUE;0.843777;1.35;-0.506223;0,62502
+Spiketail Hatchling;Prophecy;TRUE;0.298305;0.432;-0.133695;0,690520833
+Keldon Firebombers;Prophecy;TRUE;7.662.177;10.791;-3.128.823;0,710052544
+Rhystic Lightning;Prophecy;TRUE;0.298305;0.405;-0.106695;0,736555556
+Rebel Informer;Prophecy;TRUE;0.843777;1.125;-0.281223;0,750024
+Dual Nature;Prophecy;TRUE;1.696.077;2.25;-0.553923;0,753812
+Privileged Position;Ravnica%3A+City+of+Guilds;TRUE;23.855.877;31.455;-759.912.300.000.001;0,758412876
+Slaughter Games;Return+to+Ravnica;TRUE;1.269.927;2.421;-1.151.073;0,524546468
+Rakdos's Return;Return+to+Ravnica;TRUE;1.696.077;2.637;-0.940923;0,6431843
+Aura Gnarlid;Rise+of+the+Eldrazi;TRUE;0.673317;1.341;-0.667683;0,502100671
+See Beyond;Rise+of+the+Eldrazi;TRUE;0.417627;0.63;-0.212373;0,6629
+Consume the Meek;Rise+of+the+Eldrazi;TRUE;1.269.927;1.791;-0.521073;0,709060302
+Oust;Rise+of+the+Eldrazi;TRUE;0.673317;0.882;-0.208683;0,763397959
+Dreamstone Hedron;Rise+of+the+Eldrazi;TRUE;3.400.677;4.257;-0.856323000000001;0,798843552
+Inner Fire;Saviors+of+Kamigawa;TRUE;1.696.077;7.101;-5.404.923;0,238850444
+Yuki-Onna;Saviors+of+Kamigawa;TRUE;1.269.927;2.205;-0.935073;0,575930612
+Choice of Damnations;Saviors+of+Kamigawa;TRUE;5.957.577;8.1;-2.142.423;0,735503333
+Glimmerpost;Scars+of+Mirrodin;TRUE;4.252.977;5.355;-1.102.023;0,794206723
+Faces of the Past;Scourge;TRUE;2.548.377;12.591;-10.042.623;0,202396712
+Force Bubble;Scourge;TRUE;3.826.827;8.091;-4.264.173;0,472973304
+Temple of the False God;Scourge;TRUE;32.378.877;44.91;-12.531.123;0,720972545
+Ancestral Memories;Seventh+Edition;TRUE;13.628.277;55.791;-42.162.723;0,244273754
+Bereavement;Seventh+Edition;TRUE;0.673317;1.791;-1.117.683;0,375944724
+Grafted Skullcap;Seventh+Edition;TRUE;4.252.977;9.9;-5.647.023;0,429593636
+Disorder;Seventh+Edition;TRUE;1.269.927;2.475;-1.205.073;0,513101818
+Crypt Rats;Seventh+Edition;TRUE;25.560.477;44.991;-19.430.523;0,568124225
+Oppression;Seventh+Edition;TRUE;13.628.277;22.05;-8.421.723;0,618062449
+Tolarian Winds;Seventh+Edition;TRUE;6.809.877;10.125;-3.315.123;0,672580444
+Cloudchaser Eagle;Seventh+Edition;TRUE;0.673317;0.891;-0.217683;0,755686869
+Storm Cauldron;Seventh+Edition;TRUE;34.083.477;45;-10.916.523;0,7574106
+Runed Halo;Shadowmoor;TRUE;29.821.977;44.946;-15.124.023;0,663506808
+Thraben Inspector;Shadows+over+Innistrad;TRUE;3.400.677;4.95;-1.549.323;0,687005455
+Invasive Surgery;Shadows+over+Innistrad;TRUE;0.843777;1.125;-0.281223;0,750024
+Ulvenwald Hydra;Shadows+over+Innistrad;TRUE;1.696.077;2.241;-0.544923;0,756839357
+Fatestitcher;Shards+of+Alara;TRUE;1.696.077;2.592;-0.895923;0,654350694
+Champion Lancer;Starter+1999;FALSE;1.525.617;4.905;-3.379.383;0,311033028
+Sylvan Yeti;Starter+1999;FALSE;0.588087;1.341;-0.752913;0,438543624
+Stream of Acid;Starter+1999;FALSE;1.951.767;3.591;-1.639.233;0,543516291
+Angel of Light;Starter+1999;FALSE;2.548.377;4.491;-1.942.623;0,567440882
+Dakmor Plague;Starter+1999;FALSE;0.213075;0.351;-0.137925;0,607051282
+Cinder Storm;Starter+1999;FALSE;1.099.467;1.53;-0.430533;0,718605882
+Royal Trooper;Starter+1999;FALSE;0.332397;0.441;-0.108603;0,753734694
+Goblin Commando;Starter+1999;FALSE;1.269.927;1.665;-0.395073;0,762718919
+Fire Tempest;Starter+1999;FALSE;0.502857;0.63;-0.127143;0,798185714
+Coalition Victory;Time+Spiral;TRUE;2.548.377;7.65;-5.101.623;0,333121176
+Vhati il-Dal;Time+Spiral;TRUE;5.105.277;8.991;-3.885.723;0,567820821
+Enduring Renewal;Time+Spiral;TRUE;5.105.277;7.2;-2.094.723;0,70906625
+Rancid Earth;Torment;TRUE;0.332397;0.9;-0.567603;0,36933
+Skullscorch;Torment;TRUE;0.843777;1.701;-0.857223;0,496047619
+Far Wanderings;Torment;TRUE;1.696.077;2.691;-0.994923;0,630277592
+Aesthetic Consultation;Unhinged;TRUE;5.957.577;13.5;-7.542.423;0,441302
+Vile Bile;Unhinged;TRUE;0.332397;0.675;-0.342603;0,49244
+Supersize;Unhinged;TRUE;0.417627;0.675;-0.257373;0,618706667
+Uktabi Kong;Unhinged;TRUE;11.071.377;17.1;-6.028.623;0,647448947
+Fascist Art Director;Unhinged;TRUE;0.417627;0.63;-0.212373;0,6629
+Collector Protector;Unhinged;TRUE;6.809.877;8.55;-1.740.123;0,796476842
+Covetous Dragon;Urza%27s+Destiny;TRUE;28.117.377;62.991;-34.873.623;0,446371339
+Iridescent Drake;Urza%27s+Destiny;TRUE;0.843777;1.791;-0.947223;0,471120603
+Repercussion;Urza%27s+Destiny;TRUE;17.037.477;36;-18.962.523;0,47326325
+Treachery;Urza%27s+Destiny;TRUE;161.928.477;252;-90.071.523;0,642573321
+Metathran Elite;Urza%27s+Destiny;TRUE;0.298305;0.441;-0.142695;0,676428571
+Donate;Urza%27s+Destiny;TRUE;28.117.377;40.491;-12.373.623;0,694410536
+Compost;Urza%27s+Destiny;TRUE;0.673317;0.9;-0.226683;0,74813
+Carnival of Souls;Urza%27s+Destiny;TRUE;32.378.877;40.5;-8.121.123;0,799478444
+Shivan Phoenix;Urza%27s+Legacy;TRUE;3.400.677;13.5;-10.099.323;0,251902
+Aura Flux;Urza%27s+Legacy;TRUE;1.696.077;5.355;-3.658.923;0,316727731
+Weatherseed Treefolk;Urza%27s+Legacy;TRUE;34.083.477;99;-64.916.523;0,344277545
+Thran Lens;Urza%27s+Legacy;TRUE;2.548.377;7.101;-4.552.623;0,358875792
+Simian Grunts;Urza%27s+Legacy;TRUE;0.332397;0.675;-0.342603;0,49244
+Phyrexian Reclamation;Urza%27s+Legacy;TRUE;21.298.977;40.5;-19.201.023;0,525900667
+Deranged Hermit;Urza%27s+Legacy;TRUE;55.390.977;99.9;-44.509.023;0,554464234
+Multani, Maro-Sorcerer;Urza%27s+Legacy;TRUE;38.344.977;63;-24.655.023;0,608650429
+Darkwatch Elves;Urza%27s+Legacy;TRUE;0.332397;0.54;-0.207603;0,61555
+Tragic Poet;Urza%27s+Legacy;TRUE;0.417627;0.63;-0.212373;0,6629
+Delusions of Mediocrity;Urza%27s+Legacy;TRUE;2.122.227;3.141;-1.018.773;0,675653295
+Scrapheap;Urza%27s+Legacy;TRUE;1.696.077;2.241;-0.544923;0,756839357
+Planar Collapse;Urza%27s+Legacy;TRUE;17.037.477;21.6;-4.562.523;0,788772083
+Quest for Renewal;Worldwake;TRUE;2.974.527;4.05;-1.075.473;0,734451111
+Quest for the Holy Relic;Zendikar;TRUE;0.332397;0.45;-0.117603;0,73866
+Psionic Blast;Time+Spiral;TRUE;9.366.777;11.7;-2.333.223;0,800579231
+Now I Know My ABC's;Unhinged;TRUE;9.366.777;11.655;-2.288.223;0,80367027
+Wrexial, the Risen Deep;Worldwake;TRUE;14.480.577;17.991;-3.510.423;0,804878939
+Swirling Sandstorm;Judgment;TRUE;1.696.077;2.106;-0.409923;0,805354701
+Full Moon's Rise;Innistrad;TRUE;1.269.927;1.575;-0.305073;0,806302857
+Well of Discovery;Prophecy;TRUE;1.269.927;1.575;-0.305073;0,806302857
+Ramosian Captain;Mercadian+Masques;TRUE;0.843777;1.044;-0.200223;0,808215517
+Mages' Contest;Invasion;TRUE;2.548.377;3.15;-0.601623;0,809008571
+Territorial Hellkite;Commander+2017;FALSE;0.502857;0.621;-0.118143;0,809753623
+Sage of Hours;Journey+into+Nyx;TRUE;5.105.277;6.3;-1.194.723;0,810361429
+Sandstone Needle;Mercadian+Masques;TRUE;5.105.277;6.3;-1.194.723;0,810361429
+Grip of Chaos;Scourge;TRUE;5.105.277;6.3;-1.194.723;0,810361429
+Common Cause;Mercadian+Masques;TRUE;1.269.927;1.566;-0.296073;0,810936782
+Ichor Wellspring;Mirrodin+Besieged;TRUE;5.105.277;6.291;-1.185.723;0,811520744
+Apprentice Necromancer;Urza%27s+Destiny;TRUE;10.219.077;12.591;-2.371.923;0,811617584
+Eldritch Evolution;Eldritch+Moon;TRUE;4.252.977;5.22;-0.967023;0,814746552
+Drown in Sorrow;Born+of+the+Gods;TRUE;0.843777;1.035;-0.191223;0,815243478
+Cruel Fate;Portal;FALSE;0.588087;0.72;-0.131913;0,8167875
+Hunting Kavu;Invasion;TRUE;0.332397;0.405;-0.072603;0,820733333
+Nightscape Battlemage;Planeshift;TRUE;0.332397;0.405;-0.072603;0,820733333
+Thermal Glider;Mercadian+Masques;TRUE;0.332397;0.405;-0.072603;0,820733333
+Furyborn Hellkite;Magic+2012;TRUE;3.826.827;4.635;-0.808173000000001;0,825636893
+Kemba, Kha Regent;Scars+of+Mirrodin;TRUE;2.974.527;3.6;-0.625473;0,8262575
+Sage of Epityr;Time+Spiral;TRUE;2.974.527;3.6;-0.625473;0,8262575
+Brooding Saurian;Coldsnap;TRUE;2.974.527;3.591;-0.616473;0,828328321
+Stronghold Gambit;Nemesis;TRUE;29.821.977;35.991;-6.169.023;0,828595399
+Void Snare;Magic+2015;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Keldon Megaliths;Future+Sight;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Flint Golem;Nemesis;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Mana Seism;Champions+of+Kamigawa;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Reciprocate;Champions+of+Kamigawa;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Trostani's Summoner;Dragon%27s+Maze;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Cho-Arrim Legate;Mercadian+Masques;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Nightwind Glider;Mercadian+Masques;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Uphill Battle;Mercadian+Masques;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Hollow Warrior;Prophecy;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Archery Training;Urza%27s+Destiny;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Nightshade Seer;Urza%27s+Destiny;TRUE;0.298305;0.36;-0.0616950000000001;0,828625
+Chandra, the Firebrand;Magic+2013;TRUE;5.957.577;7.182;-1.224.423;0,829515038
+Heart Warden;Urza%27s+Destiny;TRUE;1.269.927;1.53;-0.260073;0,830017647
+Cephalid Shrine;Odyssey;TRUE;0.673317;0.81;-0.136683;0,831255556
+Prized Amalgam;Shadows+over+Innistrad;FALSE;0.673317;0.81;-0.136683;0,831255556
+Rude Awakening;Modern+Masters;TRUE;1.269.927;1.521;-0.251073;0,834928994
+Time Machine;Unhinged;TRUE;12.775.977;15.291;-2.515.023;0,83552266
+Jwari Shapeshifter;Worldwake;TRUE;2.974.527;3.555;-0.580473;0,836716456
+Deal Broker;Conspiracy;TRUE;1.696.077;2.025;-0.328923;0,837568889
+Devastating Summons;Rise+of+the+Eldrazi;TRUE;2.974.527;3.546;-0.571473;0,838840102
+Kavu Chameleon;Invasion;TRUE;0.332397;0.396;-0.063603;0,839386364
+Kabira Evangel;Zendikar;TRUE;2.548.377;3.033;-0.484623;0,840216617
+Kozilek's Return;Oath+of+the+Gatewatch;TRUE;6.809.877;8.091;-1.281.123;0,841660734
+Daze;Eternal+Masters;TRUE;6.809.877;8.082;-1.272.123;0,842597996
+Extravagant Spirit;Mercadian+Masques;TRUE;0.843777;0.999;-0.155223;0,844621622
+Spiritual Asylum;Nemesis;TRUE;2.122.227;2.511;-0.388773;0,845172043
+City in a Bottle;Arabian+Nights;FALSE;136.359.477;161.1;-24.740.523;0,846427542
+Cloud Dragon;Portal;FALSE;2.974.527;3.51;-0.535473;0,84744359
+Dakmor Ghoul;Starter+1999;FALSE;2.974.527;3.501;-0.526473;0,849622108
+Chameleon Spirit;Mercadian+Masques;TRUE;0.298305;0.351;-0.052695;0,849871795
+Trap Runner;Mercadian+Masques;TRUE;0.298305;0.351;-0.052695;0,849871795
+Phyrexian Broodlings;Urza%27s+Legacy;TRUE;0.298305;0.351;-0.052695;0,849871795
+Soul Spike;Coldsnap;TRUE;3.826.827;4.5;-0.673173;0,850406
+Mightstone;Antiquities;FALSE;3.826.827;4.491;-0.664173000000001;0,85211022
+Elderscale Wurm;Magic+2013;TRUE;3.826.827;4.491;-0.664173000000001;0,85211022
+Overmaster;Torment;TRUE;3.826.827;4.491;-0.664173000000001;0,85211022
+Verdant Succession;Odyssey;TRUE;0.843777;0.99;-0.146223;0,8523
+Overburden;Prophecy;TRUE;14.480.577;16.983;-2.502.423;0,852651298
+Skull of Ramos;Mercadian+Masques;TRUE;6.809.877;7.965;-1.155.123;0,854975141
+Drogskol Reaver;Dark+Ascension;TRUE;4.252.977;4.95;-0.697023000000001;0,859187273
+Nature's Resurgence;Seventh+Edition;TRUE;4.252.977;4.941;-0.688023000000001;0,860752277
+Secure the Wastes;Dragons+of+Tarkir;TRUE;4.252.977;4.941;-0.688023000000001;0,860752277
+Retraced Image;Torment;TRUE;3.826.827;4.41;-0.583173;0,867761224
+Taoist Mystic;Portal+Three+Kingdoms;FALSE;4.679.127;5.391;-0.711873;0,867951586
+Kavu Mauler;Apocalypse;TRUE;0.843777;0.972;-0.128223;0,868083333
+Marble Diamond;Seventh+Edition;TRUE;9.366.777;10.782;-1.415.223;0,86874207
+Abbot of Keral Keep;Magic+Origins;TRUE;2.548.377;2.925;-0.376623;0,87124
+Alluring Scent;Portal+Second+Age;FALSE;0.588087;0.675;-0.0869130000000001;0,87124
+Blood Oath;Mercadian+Masques;TRUE;2.122.227;2.43;-0.307773;0,873344444
+Kozilek's Return;Oath+of+the+Gatewatch;FALSE;2.122.227;2.421;-0.298773;0,876591078
+Springjack Pasture;Eventide;TRUE;11.071.377;12.591;-1.519.623;0,879308792
+Pestermite;Modern+Masters;TRUE;0.673317;0.765;-0.0916830000000001;0,880152941
+Benefactor's Draught;Commander+2016;FALSE;0.673317;0.765;-0.0916830000000001;0,880152941
+Saprazzan Heir;Mercadian+Masques;TRUE;2.974.527;3.375;-0.400473;0,881341333
+Magus of the Library;Planar+Chaos;TRUE;1.269.927;1.44;-0.170073;0,88189375
+Deepwood Elder;Mercadian+Masques;TRUE;1.269.927;1.44;-0.170073;0,88189375
+Vault of the Archangel;Dark+Ascension;TRUE;5.957.577;6.75;-0.792423;0,882604
+Crush of Tentacles;Oath+of+the+Gatewatch;TRUE;2.548.377;2.88;-0.331623;0,884853125
+Raksha Golden Cub;Fifth+Dawn;TRUE;11.923.677;13.455;-1.531.323;0,886189298
+Harbinger of Night;Mirage;FALSE;2.974.527;3.348;-0.373473;0,888448925
+Stillmoon Cavalier;Eventide;TRUE;11.923.677;13.401;-1.477.323;0,889760242
+Citanul Druid;Antiquities;FALSE;6.809.877;7.65;-0.840123;0,89018
+Blind Seer;Invasion;TRUE;6.809.877;7.65;-0.840123;0,89018
+Urza's Incubator;Urza%27s+Destiny;TRUE;68.175.477;76.491;-831.552.300.000.001;0,891287563
+Meddling Kids;Unhinged;TRUE;7.662.177;8.595;-0.932823000000001;0,89146911
+Preemptive Strike;Portal+Three+Kingdoms;FALSE;1.525.617;1.71;-0.184383;0,892173684
+Magus of the Jar;Time+Spiral;TRUE;3.826.827;4.275;-0.448173000000001;0,895164211
+Wheel of Torture;Urza%27s+Legacy;TRUE;3.400.677;3.798;-0.397323;0,895386256
+Nether Spirit;Mercadian+Masques;TRUE;15.332.877;17.091;-1.758.123;0,897131648
+Zhang Liao, Hero of Hefei;Portal+Three+Kingdoms;FALSE;11.923.677;13.275;-1.351.323;0,898205424
+Biorhythm;Onslaught;TRUE;2.548.377;2.835;-0.286623;0,898898413
+Ash Zealot;Return+to+Ravnica;TRUE;1.269.927;1.404;-0.134073;0,90450641
+Troll Ascetic;Mirrodin;TRUE;2.122.227;2.34;-0.217773;0,906934615
+Mana Breach;Seventh+Edition;TRUE;4.252.977;4.68;-0.427023000000001;0,908755769
+Fuel for the Cause;Mirrodin+Besieged;TRUE;2.122.227;2.331;-0.208773;0,910436293
+Scalelord Reckoner;Commander+2017;FALSE;0.673317;0.738;-0.064683;0,912353659
+Singing Tree;Arabian+Nights;FALSE;72.436.977;78.75;-631.302.300.000.002;0,919834629
+Seekers' Squire;Ixalan;TRUE;0.332397;0.36;-0.027603;0,923325
+Radiant, Archangel;Urza%27s+Legacy;TRUE;72.436.977;78.3;-586.302.300.000.001;0,925121034
+Ancient Spring;Invasion;TRUE;0.417627;0.45;-0.032373;0,92806
+Teferi's Care;Invasion;TRUE;0.417627;0.45;-0.032373;0,92806
+Kaseto, Orochi Archmage;Commander+2015;FALSE;0.417627;0.45;-0.032373;0,92806
+Virulent Plague;Dragons+of+Tarkir;TRUE;0.417627;0.45;-0.032373;0,92806
+Raking Canopy;Shadowmoor;TRUE;0.417627;0.45;-0.032373;0,92806
+Violent Eruption;Torment;TRUE;0.417627;0.45;-0.032373;0,92806
+Cardpecker;Unhinged;TRUE;0.417627;0.45;-0.032373;0,92806
+Flaccify;Unhinged;TRUE;0.417627;0.45;-0.032373;0,92806
+Mana Flair;Unhinged;TRUE;0.417627;0.45;-0.032373;0,92806
+Standing Army;Unhinged;TRUE;0.417627;0.45;-0.032373;0,92806
+Spontaneous Generation;Mercadian+Masques;TRUE;2.548.377;2.745;-0.196623;0,928370492
+Natural Emergence;Planeshift;TRUE;1.099.467;1.179;-0.0795330000000001;0,932541985
+Djinn of the Lamp;Portal;FALSE;0.588087;0.63;-0.0419130000000001;0,933471429
+Fire Tempest;Portal;FALSE;0.588087;0.63;-0.0419130000000001;0,933471429
+Immerwolf;Dark+Ascension;FALSE;0.588087;0.63;-0.0419130000000001;0,933471429
+Back to Nature;Magic+2011;TRUE;0.673317;0.72;-0.0466830000000001;0,9351625
+Weatherseed Faeries;Urza%27s+Legacy;TRUE;0.673317;0.72;-0.0466830000000001;0,9351625
+Sentinel Sliver;Magic+2014;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Leeching Sliver;Magic+2015;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Necromancer's Covenant;Alara+Reborn;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Alabaster Leech;Invasion;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Ruby Leech;Invasion;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Master of the Feast;Journey+into+Nyx;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Gideon's Avenger;Magic+2012;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Throne of Empires;Magic+2012;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Verdeloth the Ancient;Modern+Masters;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Grim Backwoods;Dark+Ascension;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Nether Spirit;Mercadian+Masques;FALSE;0.843777;0.9;-0.0562230000000001;0,93753
+Scroll of Origins;Saviors+of+Kamigawa;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Impromptu Raid;Shadowmoor;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Always Watching;Shadows+over+Innistrad;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Reckless Abandon;Urza%27s+Destiny;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Multani's Acolyte;Urza%27s+Legacy;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Multani's Presence;Urza%27s+Legacy;TRUE;0.843777;0.9;-0.0562230000000001;0,93753
+Haunted Angel;Apocalypse;TRUE;1.269.927;1.35;-0.0800730000000003;0,940686667
+Symbiotic Wurm;Onslaught;TRUE;1.269.927;1.35;-0.0800730000000003;0,940686667
+Thornscape Master;Invasion;TRUE;1.269.927;1.35;-0.0800730000000003;0,940686667
+Call to the Grave;Magic+2012;TRUE;1.269.927;1.35;-0.0800730000000003;0,940686667
+Fleetfoot Panther;Planeshift;TRUE;1.269.927;1.35;-0.0800730000000003;0,940686667
+Radiant Kavu;Planeshift;TRUE;1.269.927;1.35;-0.0800730000000003;0,940686667
+Yavimaya Dryad;Time+Spiral;TRUE;1.269.927;1.35;-0.0800730000000003;0,940686667
+Soul of Theros;Magic+2015;TRUE;1.696.077;1.8;-0.103923;0,942265
+Enlistment Officer;Apocalypse;TRUE;1.696.077;1.8;-0.103923;0,942265
+Mobilization;Onslaught;TRUE;1.696.077;1.8;-0.103923;0,942265
+Mantis Rider;Khans+of+Tarkir;TRUE;1.696.077;1.8;-0.103923;0,942265
+Hada Freeblade;Worldwake;TRUE;1.696.077;1.8;-0.103923;0,942265
+Tidebinder Mage;Magic+2014;TRUE;2.122.227;2.25;-0.127773;0,943212
+Notorious Assassin;Mercadian+Masques;TRUE;2.122.227;2.25;-0.127773;0,943212
+Death or Glory;Invasion;TRUE;2.548.377;2.7;-0.151623;0,943843333
+Game Preserve;Mercadian+Masques;TRUE;2.548.377;2.7;-0.151623;0,943843333
+Spirit Mantle;Magic+2012;TRUE;2.974.527;3.15;-0.175473;0,944294286
+Slumbering Dragon;Magic+2013;TRUE;2.974.527;3.15;-0.175473;0,944294286
+Pia and Kiran Nalaar;Magic+Origins;TRUE;2.974.527;3.15;-0.175473;0,944294286
+Fiend Hunter;Innistrad;TRUE;3.400.677;3.6;-0.199323;0,9446325
+Phyrexian Scuta;Planeshift;TRUE;3.826.827;4.05;-0.223173;0,944895556
+Deprive;Rise+of+the+Eldrazi;TRUE;3.826.827;4.05;-0.223173;0,944895556
+Subversion;Urza%27s+Legacy;TRUE;4.252.977;4.5;-0.247023;0,945106
+Chandra, Pyromaster;Magic+2015;TRUE;5.957.577;6.3;-0.342423;0,945647143
+Coastal Piracy;Eighth+Edition;TRUE;7.662.177;8.1;-0.437823;0,945947778
+The Gitrog Monster;Shadows+over+Innistrad;TRUE;7.662.177;8.1;-0.437823;0,945947778
+Curse of the Fire Penguin;Unhinged;TRUE;7.662.177;8.1;-0.437823;0,945947778
+Nacatl War-Pride;Future+Sight;TRUE;8.514.477;9;-0.485523000000001;0,946053
+Rite of Flame;Coldsnap;TRUE;8.514.477;9;-0.485523000000001;0,946053
+Gideon, Ally of Zendikar;Battle+for+Zendikar;TRUE;17.037.477;18;-0.962523000000001;0,9465265
+Gaea's Avenger;Antiquities;FALSE;25.560.477;27;-1.439.523;0,946684333
+Devoted Druid;Shadowmoor;TRUE;25.560.477;27;-1.439.523;0,946684333
+Minamo, School at Water's Edge;Champions+of+Kamigawa;TRUE;80.959.977;85.5;-454.002.300.000.001;0,946900316
+Fell Flagship;Ixalan;TRUE;1.269.927;1.341;-0.0710730000000002;0,947
+Slagstorm;Mirrodin+Besieged;TRUE;1.269.927;1.341;-0.0710730000000002;0,947
+Perilous Myr;Scars+of+Mirrodin;TRUE;1.269.927;1.341;-0.0710730000000002;0,947
+Traverse the Ulvenwald;Shadows+over+Innistrad;FALSE;1.269.927;1.341;-0.0710730000000002;0,947
+Bring to Light;Battle+for+Zendikar;TRUE;1.696.077;1.791;-0.0949230000000001;0,947
+Paliano, the High City;Conspiracy;TRUE;2.548.377;2.691;-0.142623;0,947
+Heartless Summoning;Innistrad;TRUE;2.548.377;2.691;-0.142623;0,947
+Temple of Plenty;Born+of+the+Gods;TRUE;2.548.377;2.691;-0.142623;0,947
+Birchlore Rangers;Onslaught;TRUE;3.400.677;3.591;-0.190323;0,947
+Fire Dragon;Portal;FALSE;3.400.677;3.591;-0.190323;0,947
+Forbidding Watchtower;Urza%27s+Legacy;TRUE;4.252.977;4.491;-0.238023000000001;0,947
+Stone Catapult;Portal+Three+Kingdoms;FALSE;5.105.277;5.391;-0.285723;0,947
+Selfless Spirit;Eldritch+Moon;TRUE;5.957.577;6.291;-0.333423000000001;0,947
+Haunting Wind;Antiquities;FALSE;6.809.877;7.191;-0.381123000000001;0,947
+Grim Flayer;Eldritch+Moon;FALSE;7.662.177;8.091;-0.428823000000001;0,947
+Eidolon of Rhetoric;Journey+into+Nyx;TRUE;7.662.177;8.091;-0.428823000000001;0,947
+Temple Bell;Magic+2011;TRUE;7.662.177;8.091;-0.428823000000001;0,947
+Gurmag Angler;Fate+Reforged;TRUE;8.514.477;8.991;-0.476523;0,947
+Demon of Death's Gate;Magic+2011;TRUE;8.514.477;8.991;-0.476523;0,947
+Merciless Eviction;Gatecrash;TRUE;9.366.777;9.891;-0.524223000000001;0,947
+Strands of Night;Seventh+Edition;TRUE;12.775.977;13.491;-0.715023;0,947
+Statecraft;Mercadian+Masques;TRUE;12.775.977;13.491;-0.715023;0,947
+Kaervek the Merciless;Time+Spiral;TRUE;12.775.977;13.491;-0.715023;0,947
+Bloodcurdling Scream;Portal+Second+Age;FALSE;0.213075;0.225;-0.011925;0,947
+Wake the Dead;Commander+2014;FALSE;0.213075;0.225;-0.011925;0,947
+False Orders;Unlimited;FALSE;0.213075;0.225;-0.011925;0,947
+Silverback Ape;Eighth+Edition;FALSE;0.213075;0.225;-0.011925;0,947
+Devout Monk;Starter+1999;FALSE;0.213075;0.225;-0.011925;0,947
+Silverback Ape;Starter+1999;FALSE;0.213075;0.225;-0.011925;0,947
+Triumph of Ferocity;Avacyn+Restored;TRUE;0.298305;0.315;-0.016695;0,947
+Canopy Surge;Invasion;TRUE;0.298305;0.315;-0.016695;0,947
+Rith's Attendant;Invasion;TRUE;0.298305;0.315;-0.016695;0,947
+Panacea;Mercadian+Masques;TRUE;0.298305;0.315;-0.016695;0,947
+Robber Fly;Mercadian+Masques;TRUE;0.298305;0.315;-0.016695;0,947
+Slice and Dice;Onslaught;TRUE;0.332397;0.351;-0.018603;0,947
+Lashknife Barrier;Planeshift;TRUE;0.332397;0.351;-0.018603;0,947
+Vintara Snapper;Prophecy;TRUE;0.332397;0.351;-0.018603;0,947
+Silver Knight;Scourge;TRUE;0.332397;0.351;-0.018603;0,947
+Belligerent Hatchling;Eventide;TRUE;0.417627;0.441;-0.023373;0,947
+Bituminous Blast;Alara+Reborn;TRUE;0.417627;0.441;-0.023373;0,947
+Wasteland Viper;Gatecrash;TRUE;0.417627;0.441;-0.023373;0,947
+Gallantry;Odyssey;TRUE;0.417627;0.441;-0.023373;0,947
+Cateran Summons;Mercadian+Masques;TRUE;0.417627;0.441;-0.023373;0,947
+Close Quarters;Mercadian+Masques;TRUE;0.417627;0.441;-0.023373;0,947
+Lumbering Satyr;Mercadian+Masques;TRUE;0.417627;0.441;-0.023373;0,947
+Quagmire Lamprey;Mercadian+Masques;TRUE;0.417627;0.441;-0.023373;0,947
+Descendant of Kiyomaro;Saviors+of+Kamigawa;TRUE;0.417627;0.441;-0.023373;0,947
+Burning Cinder Fury of Crimson Chaos Fire;Unglued;FALSE;0.417627;0.441;-0.023373;0,947
+Gluetius Maximus;Unhinged;TRUE;0.417627;0.441;-0.023373;0,947
+Head to Head;Unhinged;TRUE;0.417627;0.441;-0.023373;0,947
+Goblin Berserker;Urza%27s+Destiny;TRUE;0.417627;0.441;-0.023373;0,947
+Planar Despair;Apocalypse;TRUE;0.673317;0.711;-0.0376830000000001;0,947
+Nature's Cloak;Portal;FALSE;0.673317;0.711;-0.0376830000000001;0,947
+Rhystic Cave;Prophecy;TRUE;0.673317;0.711;-0.0376830000000001;0,947
+Distortion Strike;Rise+of+the+Eldrazi;FALSE;0.673317;0.711;-0.0376830000000001;0,947
+The Gitrog Monster;Shadows+over+Innistrad;FALSE;0.673317;0.711;-0.0376830000000001;0,947
+Plague Belcher;Amonkhet;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Bloodfire Colossus;Apocalypse;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Catapult Master;Onslaught;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Kaboom!;Onslaught;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Phyrexian Lens;Invasion;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Druidic Satchel;Magic+2012;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Ground Seal;Magic+2013;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Thopter Engineer;Magic+Origins;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Spellbane Centaur;Odyssey;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Mystic Crusader;Odyssey;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Unifying Theory;Odyssey;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Hero of Iroas;Born+of+the+Gods;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Volcanic Fallout;Conflux;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Bloodfire Colossus;Tenth+Edition;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Aquamoeba;Torment;TRUE;0.843777;0.891;-0.0472230000000001;0,947
+Cardboard Carapace;Unglued;FALSE;0.843777;0.891;-0.0472230000000001;0,947
+Infernal Contract;Seventh+Edition;TRUE;11.923.677;12.582;-0.658323000000001;0,947677396
+Chandra, the Firebrand;Magic+2012;TRUE;6.809.877;7.182;-0.372123;0,948186717
+Spreading Seas;Zendikar;TRUE;12.775.977;13.455;-0.679023000000001;0,949533779
+Blast from the Past;Unhinged;TRUE;25.560.477;26.91;-1.349.523;0,949850502
+Blinkmoth Nexus;Modern+Masters+2015;TRUE;10.219.077;10.755;-0.535922999999999;0,950169874
+Harsh Mercy;Onslaught;TRUE;9.366.777;9.855;-0.488223000000001;0,950459361
+Drawn Together;Unhinged;TRUE;7.662.177;8.055;-0.392823;0,951232402
+Door to Nothingness;Fifth+Dawn;TRUE;6.809.877;7.155;-0.345123;0,95176478
+Sky Hussar;Dissension;TRUE;5.957.577;6.255;-0.297423;0,95245036
+Stifle;Conspiracy;TRUE;12.775.977;13.41;-0.634023000000001;0,952720134
+Desolate Lighthouse;Avacyn+Restored;TRUE;5.105.277;5.355;-0.249723;0,953366387
+Distortion Strike;Rise+of+the+Eldrazi;TRUE;5.105.277;5.355;-0.249723;0,953366387
+Jeweled Spirit;Prophecy;TRUE;1.269.927;1.332;-0.0620730000000003;0,953398649
+Worldgorger Dragon;Eternal+Masters;TRUE;4.252.977;4.455;-0.202023000000001;0,954652525
+Spire Golem;Darksteel;TRUE;3.400.677;3.555;-0.154323;0,956589873
+Spreading Algae;Eighth+Edition;TRUE;3.400.677;3.555;-0.154323;0,956589873
+Collective Defiance;Eldritch+Moon;TRUE;0.843777;0.882;-0.0382230000000001;0,956663265
+Devoted Caretaker;Odyssey;FALSE;0.843777;0.882;-0.0382230000000001;0,956663265
+Armistice;Mercadian+Masques;TRUE;0.843777;0.882;-0.0382230000000001;0,956663265
+Death Pit Offering;Eighth+Edition;TRUE;0.843777;0.882;-0.0382230000000001;0,956663265
+Gravespawn Sovereign;Onslaught;TRUE;8.514.477;8.892;-0.377523000000002;0,957543522
+Vexing Sphinx;Coldsnap;TRUE;3.826.827;3.996;-0.169173000000001;0,957664414
+Shivan Harvest;Invasion;TRUE;2.974.527;3.105;-0.130473;0,95797971
+Snow-Covered Forest;Coldsnap;TRUE;7.662.177;7.992;-0.329823000000001;0,958730856
+Ensoul Artifact;Magic+2015;TRUE;2.548.377;2.655;-0.106623;0,959840678
+Battle Screech;Judgment;FALSE;2.548.377;2.655;-0.106623;0,959840678
+Predict;Odyssey;FALSE;2.548.377;2.655;-0.106623;0,959840678
+Moss Diamond;Seventh+Edition;TRUE;5.957.577;6.201;-0.243423;0,960744557
+R&D's Secret Lair;Unhinged;TRUE;28.117.377;29.25;-1.132.623;0,961277846
+Eviscerator;Urza%27s+Legacy;TRUE;2.122.227;2.205;-0.082773;0,962461224
+Necrogen Mists;Mirrodin;TRUE;5.105.277;5.301;-0.195723;0,963078098
+Sundial of the Infinite;Magic+2012;FALSE;2.377.917;2.466;-0.0880830000000001;0,964281022
+Fledgling Dragon;Judgment;TRUE;4.252.977;4.41;-0.157023000000001;0,964393878
+Soul of Innistrad;Magic+2015;TRUE;1.696.077;1.755;-0.0589230000000001;0,966425641
+Trade Secrets;Onslaught;TRUE;1.696.077;1.755;-0.0589230000000001;0,966425641
+True Believer;Onslaught;TRUE;1.696.077;1.755;-0.0589230000000001;0,966425641
+Pharika, God of Affliction;Journey+into+Nyx;FALSE;1.696.077;1.755;-0.0589230000000001;0,966425641
+Eldrazi Mimic;Oath+of+the+Gatewatch;TRUE;1.696.077;1.755;-0.0589230000000001;0,966425641
+Bargaining Table;Mercadian+Masques;TRUE;1.696.077;1.755;-0.0589230000000001;0,966425641
+Temple of Abandon;Theros;TRUE;1.696.077;1.755;-0.0589230000000001;0,966425641
+Brink of Madness;Urza%27s+Legacy;TRUE;1.696.077;1.755;-0.0589230000000001;0,966425641
+Realm Razer;Shards+of+Alara;TRUE;0.843777;0.873;-0.0292230000000001;0,966525773
+Rack and Ruin;Urza%27s+Legacy;TRUE;0.843777;0.873;-0.0292230000000001;0,966525773
+Ghoul's Feast;Mercadian+Masques;TRUE;0.417627;0.432;-0.014373;0,966729167
+Eye of Ugin;Modern+Masters+2015;TRUE;10.219.077;10.566;-0.346923;0,967166099
+Crimson Hellkite;Seventh+Edition;TRUE;19.594.377;20.25;-0.655623000000002;0,967623556
+Worldspine Wurm;Return+to+Ravnica;TRUE;8.514.477;8.793;-0.278523;0,968324463
+Dack's Duplicate;Conspiracy;TRUE;3.400.677;3.51;-0.109323;0,968853846
+Angel of Salvation;Future+Sight;TRUE;3.400.677;3.51;-0.109323;0,968853846
+Thundermare;Ninth+Edition;TRUE;4.252.977;4.374;-0.121023000000001;0,972331276
+Heightened Awareness;Prophecy;TRUE;1.269.927;1.305;-0.0350730000000001;0,973124138
+Impatience;Urza%27s+Destiny;TRUE;1.269.927;1.305;-0.0350730000000001;0,973124138
+Unearth;Urza%27s+Legacy;FALSE;1.269.927;1.305;-0.0350730000000001;0,973124138
+Ashen Rider;Theros;TRUE;5.957.577;6.12;-0.162423;0,973460294
+Darkest Hour;Seventh+Edition;TRUE;34.083.477;35.001;-0.917523000000003;0,973785806
+Chittering Rats;Darksteel;TRUE;3.400.677;3.492;-0.091323;0,973847938
+Maelstrom Nexus;Alara+Reborn;TRUE;21.298.977;21.861;-0.562023000000003;0,974291066
+Qasali Slingers;Commander+2017;FALSE;0.298305;0.306;-0.00769500000000006;0,974852941
+Defender of Law;Urza%27s+Legacy;TRUE;0.298305;0.306;-0.00769500000000006;0,974852941
+Hushwing Gryff;Magic+2015;TRUE;2.548.377;2.61;-0.061623;0,976389655
+Carapace Forger;Scars+of+Mirrodin;TRUE;2.548.377;2.61;-0.061623;0,976389655
+Isleback Spawn;Shadowmoor;TRUE;0.843777;0.864;-0.0202230000000001;0,97659375
+Ali from Cairo;Arabian+Nights;FALSE;136.359.477;139.482;-3.122.523;0,977613434
+Dreadbore;Return+to+Ravnica;TRUE;5.105.277;5.22;-0.114723;0,978022414
+Dromar, the Banisher;Invasion;TRUE;25.560.477;26.1;-0.539523000000003;0,979328621
+Johnny, Combo Player;Unhinged;TRUE;25.560.477;26.1;-0.539523000000003;0,979328621
+Hell's Thunder;Shards+of+Alara;TRUE;1.269.927;1.296;-0.0260730000000002;0,979881944
+Hornet Nest;Magic+2015;TRUE;2.122.227;2.16;-0.0377730000000001;0,9825125
+Dragon Whisperer;Dragons+of+Tarkir;TRUE;2.122.227;2.16;-0.0377730000000001;0,9825125
+Mesmeric Orb;Mirrodin;TRUE;22.151.277;22.5;-0.348723000000003;0,9845012
+Garruk, Caller of Beasts;Magic+2014;TRUE;11.071.377;11.241;-0.169623;0,984910328
+Grim Flayer;Eldritch+Moon;TRUE;21.298.977;21.6;-0.301023000000004;0,98606375
+Coercive Portal;Conspiracy;TRUE;21.298.977;21.6;-0.301023000000004;0,98606375
+Remove;Portal+Second+Age;FALSE;0.213075;0.216;-0.00292500000000001;0,986458333
+Reckless Embermage;Seventh+Edition;TRUE;2.548.377;2.583;-0.0346230000000003;0,986595819
+Braids, Cabal Minion;Eternal+Masters;TRUE;2.122.227;2.151;-0.0287730000000002;0,986623431
+Grim Return;Magic+2014;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Stain the Mind;Magic+2015;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+False Dawn;Apocalypse;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Sapphire Leech;Invasion;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Destructive Force;Magic+2011;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Yeva, Nature's Herald;Magic+2013;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Plated Slagwurm;Mirrodin;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Knowledge Pool;Mirrodin+Besieged;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Graceful Antelope;Odyssey;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Stalking Bloodsucker;Odyssey;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Surrak, the Hunt Caller;Dragons+of+Tarkir;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Nivmagus Elemental;Return+to+Ravnica;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Turbulent Dreams;Torment;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Stop That;Unhinged;TRUE;0.843777;0.855;-0.0112230000000001;0,986873684
+Breeding Pool;Gatecrash;TRUE;19.594.377;19.8;-0.205623000000003;0,989615
+Angel of Fury;Portal+Second+Age;FALSE;1.951.767;1.971;-0.0192330000000003;0,990242009
+Godless Shrine;Gatecrash;TRUE;19.594.377;19.782;-0.187623000000002;0,990515469
+Golgari Charm;Return+to+Ravnica;TRUE;3.826.827;3.861;-0.0341730000000005;0,991149184
+Whirlpool Warrior;Apocalypse;TRUE;9.366.777;9.45;-0.083223000000002;0,991193333
+Ishi-Ishi, Akki Crackshot;Betrayers+of+Kamigawa;TRUE;1.696.077;1.71;-0.0139230000000001;0,991857895
+Ghitu Fire;Invasion;TRUE;2.548.377;2.565;-0.0166230000000001;0,993519298
+Denying Wind;Prophecy;TRUE;2.548.377;2.565;-0.0166230000000001;0,993519298
+Doomsday Specter;Planeshift;TRUE;4.252.977;4.275;-0.0220230000000008;0,994848421
+Savageborn Hydra;Dragon%27s+Maze;TRUE;4.252.977;4.275;-0.0220230000000008;0,994848421
+Dictate of Erebos;Journey+into+Nyx;TRUE;8.514.477;8.55;-0.0355230000000013;0,995845263
+Ashiok, Nightmare Weaver;Theros;TRUE;17.037.477;17.1;-0.0625230000000023;0,996343684
+Form of the Squirrel;Unhinged;TRUE;17.037.477;17.1;-0.0625230000000023;0,996343684
+Decimator of the Provinces;Eldritch+Moon;TRUE;1.696.077;1.701;-0.00492300000000001;0,99710582
+Cabal Patriarch;Odyssey;TRUE;1.696.077;1.701;-0.00492300000000001;0,99710582
+Dismiss;Conspiracy%3A+Take+the+Crown;TRUE;0.843777;0.846;-0.00222300000000009;0,99737234
+Orim's Thunder;Apocalypse;TRUE;0.843777;0.846;-0.00222300000000009;0,99737234
+Cultivator's Caravan;Kaladesh;TRUE;0.843777;0.846;-0.00222300000000009;0,99737234
+Borderland Behemoth;Morningtide;TRUE;0.843777;0.846;-0.00222300000000009;0,99737234
+Plague Boiler;Ravnica%3A+City+of+Guilds;TRUE;0.843777;0.846;-0.00222300000000009;0,99737234
+Misthollow Griffin;Avacyn+Restored;FALSE;0.673317;0.675;-0.0016830000000001;0,997506667
+Warped Devotion;Planeshift;TRUE;0.673317;0.675;-0.0016830000000001;0,997506667
+Alluring Scent;Portal;FALSE;0.673317;0.675;-0.0016830000000001;0,997506667
+Arc Trail;Scars+of+Mirrodin;TRUE;0.673317;0.675;-0.0016830000000001;0,997506667
