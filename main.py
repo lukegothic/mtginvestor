@@ -76,15 +76,17 @@ def finance_fromeutousa():
 def finance_fromusatoeu():
     editions = Gatherer.getEditions()
     usdtoeu = ExchangeRate.get("USDEUR=X")
-    comisionmkm = 0.05
-    undercut = 0.05
+    comisionmkm = 0.05 # comision que se queda mkm de las ventas
+    undercut = 0.05 # undercut para vender
+    ajustebeneficio = 0.15 # margen de perdida que asumo al vender de usa a eur (store credit me da 0.3)
+    storecreditbonus = 0.3
     with open("output/usatoeu.csv", "w", newline='\n') as f:
         writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
     # TODO: DEFINIR LO QUE ES POTENTIAL ---> marcar cuando es un staple y etc.
     for edition in editions:
         if not edition["code_ck"] == 'NULL' and not edition["code_mkm"] == 'NULL':
-            sql = "select ck.edition, ck.name, ck.foil, ck.price as ck, mkm.price as mkm, ck.available, (mkm.price - ck.price) as profit, (mkm.price - ck.price) * available as profittotal,(mkm.price / ck.price) - 1 as profitpct from (select e.code as editioncode, e.name as edition, c.name, foil, round(cast(price * {} as numeric), 2) as price, available from ck_cardprices p left join ck_cards c on p.card = c.id left join editions e on p.edition = e.code_ck where condition = 'NM' and available > 0 and e.code = '{}') ck inner join (select e.code as editioncode, c.name, c.edition, p.foil, round(cast(p.price * {} as numeric), 2) as price from mkm_cardpricesmin p left join mkm_cards c on p.name = c.id and p.edition = c.edition left join editions e on p.edition = e.code_mkm where e.code = '{}') mkm on ck.editioncode = mkm.editioncode and lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where ck.price < mkm.price".format(usdtoeu, edition["id"], 1 - comisionmkm - undercut, edition["id"])
+            sql = "select ck.edition, ck.name, ck.foil, ck.price as ck, mkm.price as mkm, ck.available, (mkm.price - ck.price) as profit, (mkm.price - ck.price) * available as profittotal,(mkm.price / ck.price) - 1 as profitpct from (select e.code as editioncode, e.name as edition, c.name, foil, round(cast(price * {} as numeric), 2) as price, available from ck_cardprices p left join ck_cards c on p.card = c.id left join editions e on p.edition = e.code_ck where condition = 'NM' and available > 0 and e.code = '{}') ck inner join (select e.code as editioncode, c.name, c.edition, p.foil, round(cast(p.price * {} as numeric), 2) as price from mkm_cardpricesmin p left join mkm_cards c on p.name = c.id and p.edition = c.edition left join editions e on p.edition = e.code_mkm where e.code = '{}') mkm on ck.editioncode = mkm.editioncode and lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where (mkm.price / ck.price) >= {}".format(usdtoeu, edition["id"], 1 - comisionmkm - undercut, edition["id"], 1 - (storecreditbonus - ajustebeneficio))
             cards = phppgadmin.query(sql)
             with open("output/usatoeu.csv", "a", newline='\n') as f:
                 writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
