@@ -13,7 +13,7 @@ import csv
 
 def ckprocess_savebuylist():
     buylist = CK.buylist()
-    sql = "INSERT INTO ck_buylist(card,name,edition,price,foil,count) VALUES"
+    sql = "DELETE FROM ck_buylist;INSERT INTO ck_buylist(card,name,edition,price,foil,count) VALUES"
     for card in buylist:
         for entry in card.entries:
             sql = sql + "({},'{}',{},{},{},{}),".format(card.id, card.name.replace("'","''"), card.edition, entry.price, "true" if entry.foil else "false", entry.count)
@@ -50,20 +50,27 @@ def mkmprocess_savestore():
             #time.sleep(120)
         else:
             print("No price data")
+    # Rehacer tabla de precios minimos
+    print("Creando tabla de precios min para hoy (unos 5 minutos)")
+    phppgadmin.execute("DROP MATERIALIZED VIEW mkm_cardpricesmin;CREATE MATERIALIZED VIEW mkm_cardpricesmin AS SELECT mkm_cardprices.edition,mkm_cardprices.card as name, mkm_cardprices.foil, min(mkm_cardprices.price) AS price FROM mkm_cardprices GROUP BY mkm_cardprices.edition, mkm_cardprices.card, mkm_cardprices.foil WITH DATA; ALTER TABLE mkm_cardpricesmin OWNER TO postgres;")
+    print("OK")
 def finance_fromeutousa():
     editions = Gatherer.getEditions()
     usdtoeu = ExchangeRate.get("USDEUR=X")
     comisionporgastosdeenvio = 0.05
+    precioparaenviocertificado = 25
+    profittargetpct = 1.1
     with open("output/eutousa.csv", "w", newline='\n') as f:
-        writer = csv.DictWriter(f, fieldnames=["name", "edition", "foil", "ck", "mkm", "diff", "pct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "seller", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
     # TODO: DEFINIR LO QUE ES POTENTIAL ---> usar cada seller de manera particular para no tener que buscarlo a mano etc
     # TODO: ELIMINAR FALSOS POSITIVOS (available = 0)
     for edition in editions:
         if not edition["code_ck"] == 'NULL' and not edition["code_mkm"] == 'NULL':
-            cards = phppgadmin.query("select ck.name, mkm.edition, ck.foil, ck.price as ck, mkm.price as mkm, ck.price - mkm.price as diff, ck.price / mkm.price as pct from (select edition, name, foil, price * {} as price, count as available from ck_buylist where edition = {}) CK left join (select c.edition, c.name, p.foil, min(price) price, sum(available) from mkm_cards c left join mkm_cardprices p on c.edition = p.edition and c.id = p.card where c.edition = '{}' group by c.name, c.edition, p.foil) mkm on lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where ck.price - mkm.price >= 1 and ck.price / mkm.price >= 1.2".format(usdtoeu - comisionporgastosdeenvio, edition["code_ck"], edition["code_mkm"]))
-            with open("eutousa.csv", "a", newline='\n') as f:
-                writer = csv.DictWriter(f, fieldnames=["name", "edition", "foil", "ck", "mkm", "diff", "pct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            sql = "select ck.edition, ck.name, ck.foil, ck.price as ck, mkm.price as mkm, mkm.seller, mkm.available, (ck.price - mkm.price) as profit, (ck.price - mkm.price) * mkm.available as profittotal, round(ck.price / mkm.price, 2) - 1 profitpct from (select e.code as editioncode, e.name as edition, p.name, foil, round(cast(price * {} as numeric), 2) as price from ck_buylist p left join editions e on p.edition = e.code_ck where e.code = '{}') ck inner join (select e.code as editioncode, e.name as edition, c.name, foil, seller, LEAST(available, 17) as available, round(cast(((price * LEAST(available, 17)) + (select cost from mkm_shippingcosts sc where sc.from = p.itemlocation and sc.itemcount <= LEAST(available, 17) and tracked = p.price >= {} order by itemcount desc limit 1)) / LEAST(available, 17) as numeric), 2) as price from mkm_cardprices p left join mkm_cards c on p.card = c.id and p.edition = c.edition left join editions e on c.edition = e.code_mkm where e.code = '{}') mkm on ck.editioncode = mkm.editioncode and lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where mkm.price < ck.price and round(ck.price / mkm.price, 2) >= {}".format(usdtoeu - comisionporgastosdeenvio, edition["id"], precioparaenviocertificado, edition["id"], profittargetpct)
+            cards = phppgadmin.query(sql)
+            with open("output/eutousa.csv", "a", newline='\n') as f:
+                writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "seller", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 for card in cards:
                     writer.writerow(card)
 def finance_fromusatoeu():
@@ -77,8 +84,10 @@ def finance_fromusatoeu():
     # TODO: DEFINIR LO QUE ES POTENTIAL ---> marcar cuando es un staple y etc.
     for edition in editions:
         if not edition["code_ck"] == 'NULL' and not edition["code_mkm"] == 'NULL':
-            cards = phppgadmin.query("select ck.name, mkm.edition, ck.foil, ck.price as ck, mkm.price as mkm, ck.price - mkm.price as diff, ck.price / mkm.price as pct from (select c.name, p.foil, price * {} as price from ck_cardprices p left join ck_cards c on p.card = c.id where condition = 'NM' and available > 0 and c.edition = {}) ck left join (select c.name, c.edition, p.foil, min(price) * {} as price from mkm_cardprices p left join mkm_cards c on p.card = c.id where c.edition = '{}' group by c.name, p.foil,c.edition) mkm on lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where ck.price / mkm.price < 1".format(usdtoeu, edition["code_ck"], 1 - comisionmkm - undercut, edition["code_mkm"]))
-            with open("usatoeu.csv", "a", newline='\n') as f:
+            #cards = phppgadmin.query("select ck.name, mkm.edition, ck.foil, ck.price as ck, mkm.price as mkm, ck.price - mkm.price as diff, ck.price / mkm.price as pct from (select c.name, p.foil, price * {} as price from ck_cardprices p left join ck_cards c on p.card = c.id where condition = 'NM' and available > 0 and c.edition = {}) ck left join (select c.name, c.edition, p.foil, min(price) * {} as price from mkm_cardprices p left join mkm_cards c on p.card = c.id where c.edition = '{}' group by c.name, p.foil,c.edition) mkm on lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where ck.price / mkm.price < 1".format(usdtoeu, edition["code_ck"], 1 - comisionmkm - undercut, edition["code_mkm"]))
+            sql = "select ck.name, mkm.edition, ck.foil, ck.price as ck, mkm.price as mkm, ck.price - mkm.price as diff, ck.price / mkm.price as pct from (select c.name, c.edition, p.foil, price * {} as price from ck_cardprices p left join ck_cards c on p.card = c.id where condition = 'NM' and available > 0 and c.edition = {}) ck left join (select c.name, c.edition, p.foil, p.price * {} as price from mkm_cardpricesmin p left join mkm_cards c on p.name = c.id and p.edition = c.edition where p.edition = '{}') mkm on lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where ck.price / mkm.price < 1".format(usdtoeu, edition["code_ck"], 1 - comisionmkm - undercut, edition["code_mkm"])
+            cards = phppgadmin.query(sql)
+            with open("output/usatoeu.csv", "a", newline='\n') as f:
                 writer = csv.DictWriter(f, fieldnames=["name", "edition", "foil", "ck", "mkm", "diff", "pct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 for card in cards:
                     writer.writerow(card)
@@ -109,15 +118,13 @@ options = {
     "6": finance_fromeutousa,
     "7": finance_fromusatoeu
 }
-while True:
-    opt = menu()
-    if (opt == "0"):
-        break
-    os.system('cls')
-    options[opt]()
-
-#TODO: precio por vendor
-# select vendor.edition,vendor.card,vendor.foil,vendor.price as vendor,mkm_cardpricesmin.price as market,vendor.price-mkm_cardpricesmin.price as diff,vendor.price/mkm_cardpricesmin.price as pct
-# from (select edition, card, foil, price from mkm_cardprices cp where seller = 'GusMate') vendor
-# left join mkm_cardpricesmin on vendor.edition = mkm_cardpricesmin.edition and vendor.card = mkm_cardpricesmin.card and vendor.foil = mkm_cardpricesmin.foil
-# where vendor.price/mkm_cardpricesmin.price  < 1.2
+if len(sys.argv) == 2:
+    s = sys.argv[1]
+    options[s]()
+else:
+    while True:
+        opt = menu()
+        if (opt == "0"):
+            break
+        os.system('cls')
+        options[opt]()

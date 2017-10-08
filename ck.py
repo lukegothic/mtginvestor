@@ -184,6 +184,9 @@ q.join()
 
 print("Finished parsing\n")
 
+phppgadmin.execute("DELETE FROM ck_cardprices;");
+print("Datos antiguos borrados")
+
 for edition in editions:
 	groupPrices(edition)
 	print(edition.name, len(edition.cards))
