@@ -278,7 +278,7 @@ class CK:
     def inventory():
         pass
 class MKM:
-    baseurl = "https://www.magiccardmarket.eu"
+    baseurl = "https://www.cardmarket.com/en/Magic"
     cachedir = "{}/mkm/{}".format(basecachedir, "{}")
     maxthreads = 6
     maxrequestnum = 1000
@@ -461,6 +461,7 @@ class MKM:
                     MKM.sleeping = False
                 if not MKM.sleeping:
                     do_work(q.get())
+                    #time.sleep(0.05)
                     q.task_done()
         if (edition is None):
             editions = MKM.selectEdition()
