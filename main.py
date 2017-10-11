@@ -27,33 +27,31 @@ def ckprocess_datosmaestros():
     CK.crawlEditions()
     CK.crawlCards()
 def mkmprocess_savestore():
-    editions = phppgadmin.query("select e.code_mkm as id, e.name from editions e inner join mkm_editions mkm on e.code_mkm = mkm.id left join mkm_cardprices p on p.edition = mkm.id group by e.code_mkm, e.name having count(p.card) = 0")
-    for edition in editions:
-        #TODO: controlamos si ya tenemos precios, se puede hacer que solo se controlen precio no actualizados y borrar precios antiguos
-        print(edition["name"])
-        cards = MKM.getPrices(edition)
-        sql = ""
-        for card in cards:
-            normalcnt = 0
-            foilcnt = 0
-            #TODO: ignorar falsos positivos de cartas foil de ediciones que no tienen foil
-            for entry in card.entries:
-                if (entry.foil):
-                    foilcnt += 1
-                else:
-                    normalcnt += 1
-                sql += "('{}','{}',{},{},{},'{}','{}'),".format(card.id, card.edition, entry.price, entry.foil, entry.count, entry.seller.replace("'","''"), entry.location)
-            #print("{} [{}|{}*]".format(card.name, normalcnt, foilcnt))
-        if sql != "":
-            affected = phppgadmin.execute("INSERT INTO mkm_cardprices(card,edition,price,foil,available,seller,itemlocation) VALUES" + sql[:-1])
-            print("Total prices inserted: {}".format(affected))
-            #time.sleep(120)
+    sqlnextedition = "select e.code_mkm as id, e.name from editions e inner join mkm_editions mkm on e.code_mkm = mkm.id left join mkm_cardprices p on p.edition = mkm.id group by e.code_mkm, e.name, mkm.locked having count(p.card) = 0 and not mkm.locked limit 1"
+    while True:
+        editions = phppgadmin.query(sqlnextedition)
+        if (len(editions) == 1):
+            edition = editions[0]
+            phppgadmin("update mkm_editions set locked = true where id = '{}'".format(edition["id"]))
+            print(edition["name"])
+            cards = MKM.getPrices(edition)
+            sql = ""
+            for card in cards:
+                for entry in card.entries:
+                    sql += "('{}','{}',{},{},{},'{}','{}'),".format(card.id, card.edition, entry.price, entry.foil, entry.count, entry.seller.replace("'","''"), entry.location)
+            if sql != "":
+                affected = phppgadmin.execute("INSERT INTO mkm_cardprices(card,edition,price,foil,available,seller,itemlocation) VALUES" + sql[:-1])
+                print("Total prices inserted: {}".format(affected))
+            else:
+                print("No price data")
+            phppgadmin("update mkm_editions set locked = false where id = '{}'".format(edition["id"]))
         else:
-            print("No price data")
-    # Rehacer tabla de precios minimos
-    print("Creando tabla de precios min para hoy (unos 5 minutos)")
-    phppgadmin.execute("DROP MATERIALIZED VIEW mkm_cardpricesmin;CREATE MATERIALIZED VIEW mkm_cardpricesmin AS SELECT mkm_cardprices.edition,mkm_cardprices.card as name, mkm_cardprices.foil, min(mkm_cardprices.price) AS price FROM mkm_cardprices GROUP BY mkm_cardprices.edition, mkm_cardprices.card, mkm_cardprices.foil WITH DATA; ALTER TABLE mkm_cardpricesmin OWNER TO postgres;")
-    print("OK")
+            break
+    # Rehacer tabla de precios minimos cuando no hay mas ediciones a procesar
+    if (phppgadmin.count("select id from mkm_editions where locked") == 0)
+        print("Creando tabla de precios min para hoy (unos 5 minutos)")
+        phppgadmin.execute("DROP MATERIALIZED VIEW mkm_cardpricesmin;CREATE MATERIALIZED VIEW mkm_cardpricesmin AS SELECT mkm_cardprices.edition,mkm_cardprices.card as name, mkm_cardprices.foil, min(mkm_cardprices.price) AS price FROM mkm_cardprices GROUP BY mkm_cardprices.edition, mkm_cardprices.card, mkm_cardprices.foil WITH DATA; ALTER TABLE mkm_cardpricesmin OWNER TO postgres;")
+        print("Finished")
 def finance_fromeutousa():
     editions = Gatherer.getEditions()
     usdtoeu = ExchangeRate.get("USDEUR=X")
@@ -129,3 +127,10 @@ else:
             break
         os.system('cls')
         options[opt]()
+
+
+
+
+#TODO: normalizar datos... puede que no sea necesario una vez tenga lo del scryfall en la db
+#select mkm.name as mkmname, ck.name as ckname from mkm_cards mkm left join (select * from ck_cards where edition = 3055) ck on lower(mkm.name) = lower(replace(ck.name, ' - Foil', '')) where mkm.edition = 'Commander+2017' and ck.name is null order by mkm.name
+#select ck.name as ckname, mkm.name as mkmname from ck_cards ck left join (select * from mkm_cards where edition = 'Commander+2017') mkm on lower(mkm.name) = lower(replace(ck.name, ' - Foil', '')) where ck.edition = 3055 and mkm.name is null order by ck.name

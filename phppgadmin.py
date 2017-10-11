@@ -48,6 +48,8 @@ def execute(sql):
             return (int)(re.match("\d*", results).group(0))
         except:
             return 0
+def count(sql):
+    return len(query(sql))
 def query(sql):
     #TODO: detectar si la sesion se ha caido
     if g_session is None:
