@@ -13,14 +13,14 @@ def process_sets():
     cachedir = "{}/sets".format(basedir)
     if (not os.path.exists(cachedir)):
         os.makedirs(cachedir)
-    phppgadmin("DELETE FROM scr_sets")
+    phppgadmin.execute("DELETE FROM scr_sets")
     filete = "{}/sets.json".format(cachedir)
     try:
         with open(filete) as f:
             data = f.read()
     except:
         req = requests.get("https://api.scryfall.com/sets")
-        data = page.text
+        data = req.text
         with open(filete, "w") as f:
             f.write(data)
     sets = json.loads(data)
@@ -88,7 +88,7 @@ else:
 # select s.name, c.name from scr_cards c left join scr_sets s on c.set = s.code
 # left join ck_cards ck on c.idck = ck.id
 # left join mkm_cards mkm on c.idmkm = mkm.edition || '/' || mkm.id
-# where not mkm.id is null and not ck.id is null
+# where (not mkm.id is null and not ck.id is null) and not s.digital
 # order by s.name, c.name
 
 
@@ -96,5 +96,5 @@ else:
 # select c.id, s.name, c.name, mkm.id, ck.id from scr_cards c left join scr_sets s on c.set = s.code
 # left join ck_cards ck on c.idck = ck.id
 # left join mkm_cards mkm on c.idmkm = mkm.edition || '/' || mkm.id
-# where (mkm.id is null or ck.id is null) and not (mkm.id is null and ck.id is null)
+# where ((mkm.id is null or ck.id is null) and not (mkm.id is null and ck.id is null)) and not s.digital
 # order by s.name, c.name

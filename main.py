@@ -27,12 +27,13 @@ def ckprocess_datosmaestros():
     CK.crawlEditions()
     CK.crawlCards()
 def mkmprocess_savestore():
+    #phppgadmin.execute("delete from mkm_cardprices")
     sqlnextedition = "select e.code_mkm as id, e.name from editions e inner join mkm_editions mkm on e.code_mkm = mkm.id left join mkm_cardprices p on p.edition = mkm.id group by e.code_mkm, e.name, mkm.locked having count(p.card) = 0 and not mkm.locked limit 1"
     while True:
         editions = phppgadmin.query(sqlnextedition)
         if (len(editions) == 1):
             edition = editions[0]
-            phppgadmin("update mkm_editions set locked = true where id = '{}'".format(edition["id"]))
+            phppgadmin.execute("update mkm_editions set locked = true where id = '{}'".format(edition["id"]))
             print(edition["name"])
             cards = MKM.getPrices(edition)
             sql = ""
@@ -44,11 +45,11 @@ def mkmprocess_savestore():
                 print("Total prices inserted: {}".format(affected))
             else:
                 print("No price data")
-            phppgadmin("update mkm_editions set locked = false where id = '{}'".format(edition["id"]))
+            phppgadmin.execute("update mkm_editions set locked = false where id = '{}'".format(edition["id"]))
         else:
             break
     # Rehacer tabla de precios minimos cuando no hay mas ediciones a procesar
-    if (phppgadmin.count("select id from mkm_editions where locked") == 0)
+    if (phppgadmin.count("select id from mkm_editions where locked") == 0):
         print("Creando tabla de precios min para hoy (unos 5 minutos)")
         phppgadmin.execute("DROP MATERIALIZED VIEW mkm_cardpricesmin;CREATE MATERIALIZED VIEW mkm_cardpricesmin AS SELECT mkm_cardprices.edition,mkm_cardprices.card as name, mkm_cardprices.foil, min(mkm_cardprices.price) AS price FROM mkm_cardprices GROUP BY mkm_cardprices.edition, mkm_cardprices.card, mkm_cardprices.foil WITH DATA; ALTER TABLE mkm_cardpricesmin OWNER TO postgres;")
         print("Finished")
@@ -79,17 +80,18 @@ def finance_fromusatoeu():
     ajustebeneficio = 0.15 # margen de perdida que asumo al vender de usa a eur (store credit me da 0.3)
     storecreditbonus = 0.3
     with open("output/usatoeu.csv", "w", newline='\n') as f:
-        writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.DictWriter(f, fieldnames=["set", "name", "foil", "ck", "mkm", "available"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
     # TODO: DEFINIR LO QUE ES POTENTIAL ---> marcar cuando es un staple y etc.
-    for edition in editions:
-        if not edition["code_ck"] == 'NULL' and not edition["code_mkm"] == 'NULL':
-            sql = "select ck.edition, ck.name, ck.foil, ck.price as ck, mkm.price as mkm, ck.available, (mkm.price - ck.price) as profit, (mkm.price - ck.price) * available as profittotal,(mkm.price / ck.price) - 1 as profitpct from (select e.code as editioncode, e.name as edition, c.name, foil, round(cast(price * {} as numeric), 2) as price, available from ck_cardprices p left join ck_cards c on p.card = c.id left join editions e on p.edition = e.code_ck where condition = 'NM' and available > 0 and e.code = '{}') ck inner join (select e.code as editioncode, c.name, c.edition, p.foil, round(cast(p.price * {} as numeric), 2) as price from mkm_cardpricesmin p left join mkm_cards c on p.name = c.id and p.edition = c.edition left join editions e on p.edition = e.code_mkm where e.code = '{}') mkm on ck.editioncode = mkm.editioncode and lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where (mkm.price / ck.price) >= {}".format(usdtoeu, edition["id"], 1 - comisionmkm - undercut, edition["id"], 1 - (storecreditbonus - ajustebeneficio))
-            cards = phppgadmin.query(sql)
-            with open("output/usatoeu.csv", "a", newline='\n') as f:
-                writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                for card in cards:
-                    writer.writerow(card)
+    sql = "select s.name as set, c.name as name, truefalse.value as foil, round(cast(ck.price * {} as numeric), 2) as ck, round(cast(mkm.price * {} as numeric), 2) as mkm, ck.available as available from scr_cards c CROSS JOIN truefalse left join scr_sets s on c.set = s.code left join ck_cardprices ck on c.idck = ck.card and truefalse.value = ck.foil left join mkm_cardpricesmin mkm on c.idmkm = mkm.edition || '/' || mkm.name and truefalse.value = mkm.foil where (not mkm.name is null and not ck.card is null) and not s.digital and ck.available > 0 and ck.condition = 'NM'".format(usdtoeu, 1 - comisionmkm - undercut)
+    cards = phppgadmin.query(sql)
+    with open("output/usatoeu.csv", "a", newline='\n') as f:
+        writer = csv.DictWriter(f, fieldnames=["set", "name", "foil", "ck", "mkm", "available"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for card in cards:
+            card["ck"] = card["ck"].replace(".",",")
+            card["mkm"] = card["mkm"].replace(".",",")
+            writer.writerow(card)
+
 def menu():
     # TODO: menus gonitos con submenus
     os.system('cls')
@@ -127,10 +129,32 @@ else:
             break
         os.system('cls')
         options[opt]()
-
+        input()
 
 
 
 #TODO: normalizar datos... puede que no sea necesario una vez tenga lo del scryfall en la db
 #select mkm.name as mkmname, ck.name as ckname from mkm_cards mkm left join (select * from ck_cards where edition = 3055) ck on lower(mkm.name) = lower(replace(ck.name, ' - Foil', '')) where mkm.edition = 'Commander+2017' and ck.name is null order by mkm.name
 #select ck.name as ckname, mkm.name as mkmname from ck_cards ck left join (select * from mkm_cards where edition = 'Commander+2017') mkm on lower(mkm.name) = lower(replace(ck.name, ' - Foil', '')) where ck.edition = 3055 and mkm.name is null order by ck.name
+
+
+# TODO: consulta de buylist vs mkm para vender
+# select
+# 	s.name as set,
+# 	c.name as name,
+# 	truefalse.value as foil,
+# 	round(cast(ck.price * 0.85 as numeric), 2) as ck
+# 	--round(cast(mkm.price * 0.9 as numeric), 2) as mkm
+# from
+# 	scr_cards c CROSS JOIN truefalse
+# 	left join scr_sets s on c.set = s.code
+# 	left join ck_buylist ck on c.idck = ck.card and truefalse.value = ck.foil
+# 	--left join mkm_cardpricesmin mkm on c.idmkm = mkm.edition || '/' || mkm.name and truefalse.value = mkm.foil
+# where
+# 	--(not mkm.name is null and not ck.card is null)
+# 	not s.digital
+# 	and not ck.card is null
+# order by set,name
+#
+# select * from ck_buylist where card = 127826
+# select * from scr_cards c where not c.idck is null and name like '%Iona%'

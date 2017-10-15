@@ -190,21 +190,13 @@ class CK:
                         print("Edicion no encontrada", edition, name)
                         edition = 0
                     price = "{}.{}".format(pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
-                    #price = round((float)(price) * usdeur_rate, 2)
-                    # credit = "{}.{}".format(pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='creditSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
                     # el credit se puede sacar multiplicando por 1.3
                     maxQty = pricewrapper.xpath('.//form/input[@class="maxQty"]')[0].attrib["value"];
                     foil = len(cardhtml.xpath(".//div[@class='foil']")) > 0
                     #TODO: algunas veces se meten repetidas (mirar tokens)
-                    inventorycard = None
-                    for card in buylist:
-                        if (card.name == name and card.edition == edition):
-                            inventorycard = card
-                            break
-                    if (inventorycard is None):
-                        inventorycard = InventoryCard(id, name, edition)
-                        buylist.append(inventorycard)
+                    inventorycard = InventoryCard(id, name, edition)
                     inventorycard.entries.append(CardDetails(price, maxQty, foil, "en", "NM"))
+                    buylist.append(inventorycard)
         def do_work(page):
             sys.stdout.write("Paginas procesadas: %d%%   \r" % (page * 100 / npages))
             sys.stdout.flush()
@@ -252,7 +244,7 @@ class CK:
 
         start = time.perf_counter()
 
-        npages = 254
+        npages = 258
 
         for p in range(1, npages):
         	q.put(p)
@@ -260,6 +252,16 @@ class CK:
         q.join()
 
         print("Crawling finalizado          ")
+        print("Normalizando IDs cartas          ")
+
+        for i, foilcard in reversed(list(enumerate(buylist))):
+            if (foilcard.entries[0].foil):
+                #buscar la correspondiente no foil
+                for normalcard in buylist:
+                    if (not normalcard.entries[0].foil and normalcard.name == foilcard.name and normalcard.edition == foilcard.edition):
+                        normalcard.entries.extend(foilcard.entries)
+                        buylist.pop(i)
+                        break
 
         if (writecsv):
             print("Guardando .csv en disco...")
@@ -281,9 +283,6 @@ class MKM:
     baseurl = "https://www.cardmarket.com/en/Magic"
     cachedir = "{}/mkm/{}".format(basecachedir, "{}")
     maxthreads = 6
-    maxrequestnum = 1000
-    requestnum = 0
-    sleeping = False
     def crawlEditions():
         page = requests.get(MKM.baseurl + "/Expansions")
         tree = html.fromstring(page.text)
@@ -425,7 +424,6 @@ class MKM:
                 else:
                     filter = productFilter
                 try:
-                    MKM.requestnum += 1
                     resp = requests.post("{}/Products/Singles/{}/{}".format(MKM.baseurl, item["card"].edition, item["card"].id), filter, headers={}, timeout = 10)
                     data = resp.text
                 except:
@@ -442,7 +440,7 @@ class MKM:
                 for row in tree.xpath('//tbody[@id="articlesTable"]/tr[not(@class)]'):
                     itemlocation = row.xpath(".//td[@class='Seller']/span/span/span[@class='icon']")[0].attrib["onmouseover"]
                     itemlocation = re.search(reItemLocation, itemlocation).group(1)
-                    seller = row.xpath(".//td[@class='Seller']/span/span/a")[0].attrib["href"].replace("/Users/", "")
+                    seller = row.xpath(".//td[@class='Seller']/span/span/a")[0].attrib["href"].replace("/en/Magic/Users/", "")
                     price = row.xpath(".//td[contains(@class,'st_price')]")[0].text_content().replace(",",".").replace("€","")
                     available = row.xpath(".//td[contains(@class,'st_ItemCount')]")[0].text_content()
                     ppu = re.search(rPPU, price)
@@ -454,15 +452,9 @@ class MKM:
             sys.stdout.flush()
         def worker():
             while True:
-                if MKM.requestnum >= MKM.maxrequestnum:
-                    MKM.requestnum = 0
-                    MKM.sleeping = True
-                    time.sleep(120)
-                    MKM.sleeping = False
-                if not MKM.sleeping:
-                    do_work(q.get())
-                    #time.sleep(0.05)
-                    q.task_done()
+                do_work(q.get())
+                time.sleep(0.05)
+                q.task_done()
         if (edition is None):
             editions = MKM.selectEdition()
         else:
