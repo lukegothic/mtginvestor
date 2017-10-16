@@ -91,8 +91,11 @@ class ExchangeRate:
         return rate
 class Deckbox:
     cachedir = "{}/deckbox/{}".format(basecachedir, "{}")
-    def inventory():
+    def inventory(usecached):
         cachedir = Deckbox.cachedir.format("inventory")
+        sys.stdout.write("Obteniendo inventario {}...".format("lukegothic"))
+        sys.stdout.flush()
+
         req = requests.get("https://deckbox.org/sets/export/125700?format=csv&f=&s=&o=&columns=Image%20URL")
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
@@ -101,6 +104,8 @@ class Deckbox:
             f.write(req.text);
         inventory = []
         reID = "(\d*).jpg$"
+        sys.stdout.write("OK")
+        print("")
         with open(filename) as f:
             reader = csv.DictReader(f, delimiter=",", quotechar='"')
             for row in reader:
@@ -175,32 +180,37 @@ class CK:
                 if len(pricewrapper) == 1:
                     pricewrapper = pricewrapper[0]
                     id = pricewrapper.xpath('.//form/input[@class="product_id"]')[0].attrib["value"];
-                    name = cardhtml.xpath(".//span[@class='productDetailTitle']/text()")[0]
-                    edition = cardhtml.xpath(".//div[@class='productDetailSet']/text()")[0]
-                    edition = re.search(reEdition, edition).group(1).strip()
-                    editionid = None
+                    #name = cardhtml.xpath(".//span[@class='productDetailTitle']/text()")[0]
+                    #edition = cardhtml.xpath(".//div[@class='productDetailSet']/text()")[0]
+                    #edition = re.search(reEdition, edition).group(1).strip()
+                    #editionid = None
                     # traducimos nombre de edicion a id
-                    for e in editions:
-                        if (e["name"] == edition):
-                            editionid = e["id"]
-                            break
-                    if not editionid is None:
-                        edition = editionid
-                    else:
-                        print("Edicion no encontrada", edition, name)
-                        edition = 0
+                    # for e in editions:
+                    #     if (e["name"] == edition):
+                    #         editionid = e["id"]
+                    #         break
+                    # if not editionid is None:
+                    #     edition = editionid
+                    # else:
+                    #     print("Edicion no encontrada", edition, name)
+                    #     edition = 0
                     price = "{}.{}".format(pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellDollarAmount']")[0].text_content().replace(",",""), pricewrapper.xpath(".//div[@class='usdSellPrice']/span[@class='sellCentsAmount']")[0].text_content())
                     # el credit se puede sacar multiplicando por 1.3
                     maxQty = pricewrapper.xpath('.//form/input[@class="maxQty"]')[0].attrib["value"];
                     foil = len(cardhtml.xpath(".//div[@class='foil']")) > 0
                     #TODO: algunas veces se meten repetidas (mirar tokens)
-                    inventorycard = InventoryCard(id, name, edition)
+                    # traducir id de la foil a la normal
+                    if foil:
+                        for translation in idtranslations:
+                            if id == translation["foil"]:
+                                id = translation["normal"]
+                                break;
+                    inventorycard = InventoryCard(id, "", "")
                     inventorycard.entries.append(CardDetails(price, maxQty, foil, "en", "NM"))
                     buylist.append(inventorycard)
         def do_work(page):
             sys.stdout.write("Paginas procesadas: %d%%   \r" % (page * 100 / npages))
             sys.stdout.flush()
-
             filename = "{}/page{}.html".format(cachedir, page)
             try:
             	f = open(filename, "r", encoding="utf8")
@@ -226,15 +236,16 @@ class CK:
         	os.makedirs(cachedir)
 
         baseurl = "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bipp%5D=100&filter%5Bsort%5D=name&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=&filter%5Bcategory_id%5D=0&filter%5Bfoil%5D=1&filter%5Bnonfoil%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=&page="
-        reEdition = "(.*)\("
+        #reEdition = "(.*)\("
         lock = threading.Lock()
 
         buylist = []
-        sys.stdout.write("Obteniendo ediciones CK...")
-        sys.stdout.flush()
-        editions = CK.getEditions()
-        sys.stdout.write("OK [{} ediciones]".format(len(editions)))
-        print("")
+        #sys.stdout.write("Obteniendo ediciones CK...")
+        #sys.stdout.flush()
+        #editions = CK.getEditions()
+        idtranslations = phppgadmin.query("SELECT foil,normal FROM ck_idtranslator")
+        #sys.stdout.write("OK [{} ediciones]".format(len(editions)))
+        #print("")
 
         q = Queue()
         for i in range(10):
@@ -252,16 +263,6 @@ class CK:
         q.join()
 
         print("Crawling finalizado          ")
-        print("Normalizando IDs cartas          ")
-
-        for i, foilcard in reversed(list(enumerate(buylist))):
-            if (foilcard.entries[0].foil):
-                #buscar la correspondiente no foil
-                for normalcard in buylist:
-                    if (not normalcard.entries[0].foil and normalcard.name == foilcard.name and normalcard.edition == foilcard.edition):
-                        normalcard.entries.extend(foilcard.entries)
-                        buylist.pop(i)
-                        break
 
         if (writecsv):
             print("Guardando .csv en disco...")

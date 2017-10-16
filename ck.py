@@ -135,16 +135,21 @@ def worker():
 		q.task_done()
 
 # coger los precios de las cartas foil y meterlos en la carta normal
+# meter datos en la tabla de traducciones
 def groupPrices(edition):
-	for i, foilcard in reversed(list(enumerate(edition.cards))):
-		if (foilcard.foil):
-			#buscar la correspondiente no foil
-			for normalcard in edition.cards:
-				if (not normalcard.foil and normalcard.name == foilcard.name):
-					normalcard.prices.extend(foilcard.prices)
-					edition.cards.pop(i)
-					break
-
+    traduccionessql = ""
+    for i, foilcard in reversed(list(enumerate(edition.cards))):
+        if (foilcard.foil):
+            #buscar la correspondiente no foil
+            for normalcard in edition.cards:
+                if (not normalcard.foil and normalcard.name == foilcard.name):
+                    traduccionessql += "({},{}),".format(foilcard.id, normalcard.id)
+                    normalcard.prices.extend(foilcard.prices)
+                    edition.cards.pop(i)
+                    break
+    if (traduccionessql != ""):
+        traduccionessql = "INSERT INTO ck_idtranslator(foil,normal) VALUES" + traduccionessql[:-1]
+        phppgadmin.execute(traduccionessql)
 def saveData(edition):
 	cardsql = "INSERT INTO ck_cards(id,name,edition) VALUES"
 	pricesql = "INSERT INTO ck_cardprices(card,edition,foil,price,available,condition) VALUES"
@@ -186,6 +191,8 @@ print("Finished parsing\n")
 
 phppgadmin.execute("DELETE FROM ck_cardprices;");
 print("Datos antiguos borrados")
+phppgadmin.execute("DELETE FROM ck_idtranslator;");
+print("Traducciones ID borradas")
 
 for edition in editions:
 	groupPrices(edition)

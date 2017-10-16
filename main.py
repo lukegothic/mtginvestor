@@ -1,9 +1,5 @@
 #menu
-from base import CK
-from base import MKM
-from base import Gatherer
-from base import ExchangeRate
-from base import Proxy
+from base import CK,MKM,Gatherer,Deckbox,ExchangeRate,Proxy
 import phppgadmin
 import sys
 from lxml import html
@@ -13,10 +9,10 @@ import csv
 
 def ckprocess_savebuylist():
     buylist = CK.buylist()
-    sql = "DELETE FROM ck_buylist;INSERT INTO ck_buylist(card,name,edition,price,foil,count) VALUES"
+    sql = "DELETE FROM ck_buylist;INSERT INTO ck_buylist(card,price,foil,count) VALUES"
     for card in buylist:
         for entry in card.entries:
-            sql = sql + "({},'{}',{},{},{},{}),".format(card.id, card.name.replace("'","''"), card.edition, entry.price, "true" if entry.foil else "false", entry.count)
+            sql = sql + "({},{},{},{}),".format(card.id, entry.price, "true" if entry.foil else "false", entry.count)
     sys.stdout.write("Guardando buylist...")
     sys.stdout.flush()
     print(phppgadmin.execute(sql[:-1]))
@@ -91,7 +87,68 @@ def finance_fromusatoeu():
             card["ck"] = card["ck"].replace(".",",")
             card["mkm"] = card["mkm"].replace(".",",")
             writer.writerow(card)
+def finance_dondevendo():
+    def obtenseleccion(candidatos, myset):
+        if myset == "":
+            return None
+        else:
+            for i, cand in reversed(list(enumerate(candidatos))):
+                if cand["set"] == myset or (myset in son and cand["set"] == son[myset]):
+                    return cand
+                elif (myset in noson and cand["set"] in noson[myset]):
+                    candidatos.pop(i)
+            if len(candidatos) == 0:
+                return None
+            elif len(candidatos) == 1:
+                return candidatos[0]
+            else:
+                print(":: {} [{}] ::".format(icard.name, icard.edition))
+                for i, cand in list(enumerate(candidatos)):
+                    print("{}. {}".format(i, cand["set"]))
+                while True:
+                    sel = input("Opcion: ")
+                    print("")
+                    # meterlas todas en noson
+                    if sel == "":
+                        if not myset in noson:
+                            noson[myset] = []
+                        noson[myset].extend(candidatos)
+                        return None
+                    else:
+                        sel = (int)(sel)
+                        cand = candidatos[sel]
+                        son[myset] = cand["set"]
+                        return cand
 
+    usdtoeu = ExchangeRate.get("USDEUR=X")
+    comisionmkm = 0.05 # comision que se queda mkm de las ventas
+    undercut = 0.05 # undercut para vender
+    inventory = Deckbox.inventory(True)
+    vender = []
+    print("Inventario: {} cartas diferentes".format(len(inventory)))
+    sql = "select s.name as set, c.name as name, truefalse.value as foil, round(cast(ck.price * {} as numeric), 2) as ck, round(cast(mkm.price * {} as numeric), 2) as mkm from scr_cards c CROSS JOIN truefalse left join scr_sets s on c.set = s.code left join ck_buylist ck on c.idck = ck.card and truefalse.value = ck.foil left join mkm_cardpricesmin mkm on c.idmkm = mkm.edition || '/' || mkm.name and truefalse.value = mkm.foil where (not mkm.name is null and not ck.card is null) and not s.digital".format(usdtoeu, 1 - comisionmkm - undercut)
+    allcards = phppgadmin.query(sql)
+    son = {}
+    noson = {}
+    for icard in inventory:
+        for entry in icard.entries:
+            # solo comparamos las cartas en ingles
+            if (entry.language == "English"):
+                candidatos = []
+                for card in allcards:
+                    if icard.name.lower() == card["name"].lower() and entry.foil == (card["foil"] == "TRUE"):
+                        candidatos.append(card)
+                seleccion = obtenseleccion(candidatos, icard.edition)
+                if not seleccion is None:
+                    vender.append(seleccion)
+
+    with open("output/dondevendo.csv", "w", newline='\n') as f:
+        writer = csv.DictWriter(f, fieldnames=["set", "name", "foil", "ck", "mkm"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writeheader()
+        for card in vender:
+            card["ck"] = card["ck"].replace(".",",")
+            card["mkm"] = card["mkm"].replace(".",",")
+            writer.writerow(card)
 def menu():
     # TODO: menus gonitos con submenus
     os.system('cls')
@@ -106,6 +163,7 @@ def menu():
     print("Finanzas")
     print("  6. Europa -> USA")
     print("  7. USA -> Europa")
+    print("  8. Donde vendo?")
     print("")
     print("0. Salir")
     return input("Opcion: ")
@@ -117,7 +175,8 @@ options = {
     "4": mkmprocess_savestore,
     #"4": mkmprocess_savestore,
     "6": finance_fromeutousa,
-    "7": finance_fromusatoeu
+    "7": finance_fromusatoeu,
+    "8": finance_dondevendo
 }
 if len(sys.argv) == 2:
     s = sys.argv[1]
@@ -129,9 +188,7 @@ else:
             break
         os.system('cls')
         options[opt]()
-        input()
-
-
+        input("Finalizado")
 
 #TODO: normalizar datos... puede que no sea necesario una vez tenga lo del scryfall en la db
 #select mkm.name as mkmname, ck.name as ckname from mkm_cards mkm left join (select * from ck_cards where edition = 3055) ck on lower(mkm.name) = lower(replace(ck.name, ' - Foil', '')) where mkm.edition = 'Commander+2017' and ck.name is null order by mkm.name
