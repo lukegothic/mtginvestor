@@ -9,13 +9,16 @@ import csv
 
 def ckprocess_savebuylist():
     buylist = CK.buylist()
-    sql = "DELETE FROM ck_buylist;INSERT INTO ck_buylist(card,price,foil,count) VALUES"
+    # backup y borrado de datos
+    print("{} precios guardados en histórico buylist".format(phppgadmin.execute("INSERT INTO ck_buylist_history(id,foil,price,available,timestamp) SELECT id,foil,price,available,timestamp FROM ck_buylist")))
+    print("{} precios borrados de buylist actual".format(phppgadmin.execute("DELETE FROM ck_buylist")))
+    sql = "INSERT INTO ck_buylist(id,foil,price,available) VALUES"
     for card in buylist:
         for entry in card.entries:
-            sql = sql + "({},{},{},{}),".format(card.id, entry.price, "true" if entry.foil else "false", entry.count)
+            sql = sql + "({},{},{},{}),".format(card.id, "true" if entry.foil else "false", entry.price, entry.count)
     sys.stdout.write("Guardando buylist...")
     sys.stdout.flush()
-    print(phppgadmin.execute(sql[:-1]))
+    print("{} precios guardados en buylist actual".format(phppgadmin.execute(sql[:-1])))
     sys.stdout.write("OK")
 def ckprocess_savestore():
     print("todo")
@@ -215,3 +218,10 @@ else:
 #
 # select * from ck_buylist where card = 127826
 # select * from scr_cards c where not c.idck is null and name like '%Iona%'
+
+
+# TODO: historico de precios ck
+# select id,foil,price,available,timestamp from ck_buylist where id = 213967 and foil
+# union
+# select id,foil,price,available,timestamp from ck_buylist_history where id = 213967 and foil
+# order by timestamp desc
