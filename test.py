@@ -5,36 +5,19 @@ from queue import Queue
 import threading
 import requests
 from base import Proxy
-from base import Proxy2
 import phppgadmin
 import sys
 from lxml import html
 import time
 
-proxies = Proxy2.getSecure()
-
-def do_work(proxy):
-    try:
-        fullip = "http://{}:{}".format(proxy["ip"], proxy["port"])
-        req = requests.get("https://www.magiccardmarket.eu/", proxies = { "http": fullip, "https": fullip }, timeout = 3)
-        with open(proxy["ip"], "w") as f:
-            print(req, req.text, req.status_code)
-            f.write(req.text)
-    except:
-        print("Proxy {} not working".format(proxy["ip"]))
-def worker():
-	while True:
-		item = q.get()
-		do_work(item)
-		q.task_done()
-
-q = Queue()
-for i in range(10):
-    t = threading.Thread(target=worker)
-    t.daemon = True
-    t.start()
-
-for proxy in proxies:
-    q.put(proxy)
-
-q.join()
+threshold = 0.4
+cards = phppgadmin.query("select * from scr_cards where not idmkm is null")
+for c in cards:
+    #print(c["idmkm"])
+    for foil in range(0, 2):
+        foilsql = "NOT " if foil == 0 else ""
+        sql = "select price from mkm_cardprices where edition || '/' || card = '{}' and {}foil and (select sum(price)/2 from (select price from mkm_cardprices where edition || '/' || card = '{}' and {}foil order by price limit 2) t) - price > price * {} and price >= 0.25 order by price limit 1".format(c["idmkm"], foilsql, c["idmkm"], foilsql, threshold / 2)
+        #print(sql)
+        result = phppgadmin.query(sql)
+        if len(result) > 0:
+            print("{} {} => {}e".format(c["idmkm"], "NORMAL" if foil == 0 else "FOIL", result[0]["price"]))

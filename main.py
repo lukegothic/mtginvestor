@@ -52,25 +52,37 @@ def mkmprocess_savestore():
         print("Creando tabla de precios min para hoy (unos 5 minutos)")
         phppgadmin.execute("DROP MATERIALIZED VIEW mkm_cardpricesmin;CREATE MATERIALIZED VIEW mkm_cardpricesmin AS SELECT mkm_cardprices.edition,mkm_cardprices.card as name, mkm_cardprices.foil, min(mkm_cardprices.price) AS price FROM mkm_cardprices GROUP BY mkm_cardprices.edition, mkm_cardprices.card, mkm_cardprices.foil WITH DATA; ALTER TABLE mkm_cardpricesmin OWNER TO postgres;")
         print("Finished")
+
+    # TODO: churro para mkm
+    # select '"' || edition || '/' || name || case when foil then 'F' else 'N' end || '":' || cast(round(cast(price as numeric),2) as varchar) || ',' from mkm_cardpricesmin
 def finance_fromeutousa():
     editions = Gatherer.getEditions()
     usdtoeu = ExchangeRate.get("USDEUR=X")
     comisionporgastosdeenvio = 0.05
     precioparaenviocertificado = 25
     profittargetpct = 1.1
+
+    sql = "select s.name as set, c.name as card, ck.foil as foil, ck.price * {0} as ck, mkm_offers.price as mkm, mkm_offers.seller as seller, mkm_offers.available as available from ck_buylist ck left join scr_cards c on ck.id = c.idck left join scr_sets s on c.set = s.code inner join (select edition || '/' || card as id, foil, round(cast(((price * LEAST(available, 17)) + (select cost from mkm_shippingcosts sc where sc.from = itemlocation and sc.itemcount <= LEAST(available, 17) and tracked = price >= 25 order by itemcount desc limit 1)) / LEAST(available, 17) as numeric), 2) as price, LEAST(available, 17) as available, seller from mkm_cardprices) mkm_offers on mkm_offers.id = c.idmkm and mkm_offers.foil = ck.foil where mkm_offers.price < ck.price * {0}".format(usdtoeu - comisionporgastosdeenvio)
+    print(sql)
+    cards = phppgadmin.query(sql)
+
     with open("output/eutousa.csv", "w", newline='\n') as f:
-        writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "seller", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.DictWriter(f, fieldnames=["set", "card", "foil", "ck", "mkm", "seller", "available"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
-    # TODO: DEFINIR LO QUE ES POTENTIAL ---> usar cada seller de manera particular para no tener que buscarlo a mano etc
-    # TODO: ELIMINAR FALSOS POSITIVOS (available = 0)
-    for edition in editions:
-        if not edition["code_ck"] == 'NULL' and not edition["code_mkm"] == 'NULL':
-            sql = "select ck.edition, ck.name, ck.foil, ck.price as ck, mkm.price as mkm, mkm.seller, mkm.available, (ck.price - mkm.price) as profit, (ck.price - mkm.price) * mkm.available as profittotal, round(ck.price / mkm.price, 2) - 1 profitpct from (select e.code as editioncode, e.name as edition, p.name, foil, round(cast(price * {} as numeric), 2) as price from ck_buylist p left join editions e on p.edition = e.code_ck where e.code = '{}') ck inner join (select e.code as editioncode, e.name as edition, c.name, foil, seller, LEAST(available, 17) as available, round(cast(((price * LEAST(available, 17)) + (select cost from mkm_shippingcosts sc where sc.from = p.itemlocation and sc.itemcount <= LEAST(available, 17) and tracked = p.price >= {} order by itemcount desc limit 1)) / LEAST(available, 17) as numeric), 2) as price from mkm_cardprices p left join mkm_cards c on p.card = c.id and p.edition = c.edition left join editions e on c.edition = e.code_mkm where e.code = '{}') mkm on ck.editioncode = mkm.editioncode and lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where mkm.price < ck.price and round(ck.price / mkm.price, 2) >= {}".format(usdtoeu - comisionporgastosdeenvio, edition["id"], precioparaenviocertificado, edition["id"], profittargetpct)
-            cards = phppgadmin.query(sql)
-            with open("output/eutousa.csv", "a", newline='\n') as f:
-                writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "seller", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                for card in cards:
-                    writer.writerow(card)
+        for card in cards:
+            writer.writerow(card)
+
+    # # TODO: DEFINIR LO QUE ES POTENTIAL ---> usar cada seller de manera particular para no tener que buscarlo a mano etc
+    # # TODO: ELIMINAR FALSOS POSITIVOS (available = 0)
+    # for edition in editions:
+    #     if not edition["code_ck"] == 'NULL' and not edition["code_mkm"] == 'NULL':
+    #         sql = "select ck.edition, ck.name, ck.foil, ck.price as ck, mkm.price as mkm, mkm.seller, mkm.available, (ck.price - mkm.price) as profit, (ck.price - mkm.price) * mkm.available as profittotal, round(ck.price / mkm.price, 2) - 1 profitpct from (select e.code as editioncode, e.name as edition, p.name, foil, round(cast(price * {} as numeric), 2) as price from ck_buylist p left join editions e on p.edition = e.code_ck where e.code = '{}') ck inner join (select e.code as editioncode, e.name as edition, c.name, foil, seller, LEAST(available, 17) as available, round(cast(((price * LEAST(available, 17)) + (select cost from mkm_shippingcosts sc where sc.from = p.itemlocation and sc.itemcount <= LEAST(available, 17) and tracked = p.price >= {} order by itemcount desc limit 1)) / LEAST(available, 17) as numeric), 2) as price from mkm_cardprices p left join mkm_cards c on p.card = c.id and p.edition = c.edition left join editions e on c.edition = e.code_mkm where e.code = '{}') mkm on ck.editioncode = mkm.editioncode and lower(ck.name) = lower(mkm.name) and ck.foil = mkm.foil where mkm.price < ck.price and round(ck.price / mkm.price, 2) >= {}".format(usdtoeu - comisionporgastosdeenvio, edition["id"], precioparaenviocertificado, edition["id"], profittargetpct)
+    #         cards = phppgadmin.query(sql)
+    #         with open("output/eutousa.csv", "a", newline='\n') as f:
+    #             writer = csv.DictWriter(f, fieldnames=["edition", "name", "foil", "ck", "mkm", "seller", "available", "profit", "profittotal", "profitpct"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    #             for card in cards:
+    #                 print(card)
+    #                 writer.writerow(card)
 def finance_fromusatoeu():
     editions = Gatherer.getEditions()
     usdtoeu = ExchangeRate.get("USDEUR=X")
