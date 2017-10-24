@@ -199,7 +199,9 @@ for edition in editions:
 	print(edition.name, len(edition.cards))
 	saveData(edition)
 
-print("Sales:", sales)
+print("=[ Sales ]=")
+for sale in sales:
+    print(sale)
 print('time:',time.perf_counter() - start)
 
 #select 'editions.append(Edition('||cast(e.id as varchar)||','||chr(34)||e.name||chr(34)||','||chr(34)||e.url||chr(34)||'))' from ck_editions e
