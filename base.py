@@ -228,6 +228,15 @@ class CK:
         		do_work(item)
         		q.task_done()
 
+        baseurl = "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bipp%5D=100&filter%5Bsort%5D=name&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=&filter%5Bcategory_id%5D=0&filter%5Bfoil%5D=1&filter%5Bnonfoil%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=&page="
+
+        # cuantas paginas?
+        req = requests.get(baseurl + "1")
+        tree = html.fromstring(req.text)
+        results = tree.xpath("//span[@class='resultsHeader']/text()")[0]
+        npages = (int)(((int)(re.search("(\d*) results", results).group(1)) / 100) + 1)
+        print("Paginas:", npages)
+
         today = time.strftime("%Y%m%d")
 
         cachedir = CK.cachedir.format("buylist/" + today)
@@ -235,7 +244,6 @@ class CK:
         if not os.path.exists(cachedir):
         	os.makedirs(cachedir)
 
-        baseurl = "https://www.cardkingdom.com/purchasing/mtg_singles?filter%5Bipp%5D=100&filter%5Bsort%5D=name&filter%5Bsearch%5D=mtg_advanced&filter%5Bname%5D=&filter%5Bcategory_id%5D=0&filter%5Bfoil%5D=1&filter%5Bnonfoil%5D=1&filter%5Bprice_op%5D=&filter%5Bprice%5D=&page="
         #reEdition = "(.*)\("
         lock = threading.Lock()
 
@@ -255,18 +263,14 @@ class CK:
 
         start = time.perf_counter()
 
-        npages = 258
-
-        for p in range(1, npages):
+        for p in range(npages):
         	q.put(p)
 
         q.join()
 
         print("Crawling finalizado          ")
-
         if (writecsv):
             print("Guardando .csv en disco...")
-
             filename = "{}/buylist.csv".format(cachedir);
             with open(filename, "w", newline='\n') as f:
                 writer = csv.DictWriter(f, fieldnames=["id", "name", "edition", "price", "count", "foil", "language", "condition"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -274,7 +278,6 @@ class CK:
                 for card in buylist:
                     for entry in card.entries:
                         writer.writerow({ "id": card.id, "name": card.name, "edition": card.edition, "price": entry.price, "count": entry.count, "foil": "true" if entry.foil else "false", "language": entry.language, "condition": entry.condition })
-
         print("==[     END     ]==")
 
         return buylist
