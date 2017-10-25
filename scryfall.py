@@ -33,8 +33,8 @@ def process_cards():
     if (not os.path.exists(cachedir)):
         os.makedirs(cachedir)
     phppgadmin.execute("DELETE FROM scr_cards")
-    reIDMKM = "https:\/\/www\.magiccardmarket\.eu\/Products\/Singles\/(.*?)\?"
-    reIDCK = "http:\/\/www\.cardkingdom\.com\/catalog\/item\/(\d*)?\?"
+    reIDMKM = "https:\/\/www\.cardmarket\.com\/Magic\/Products\/Singles\/(.*?)\?"
+    reIDCK = "https:\/\/www\.cardkingdom\.com\/catalog\/item\/(\d*)?\?"
     page = 1
     while True:
         filete = "{}/{}.json".format(cachedir, page)
@@ -47,18 +47,19 @@ def process_cards():
             with open(filete, "w", encoding="utf-8") as f:
                 f.write(data)
         cards = json.loads(data)
-        sql = "INSERT INTO scr_cards(id,name,set,idmkm,idck,reprint,image_uri,collector_number) VALUES"
+        sql = "INSERT INTO scr_cards(id,name,set,idmkm,idck,reprint,image_uri,collector_number,multiverse_id) VALUES"
         for card in cards["data"]:
             idmkm = re.match(reIDMKM, card["purchase_uris"]["magiccardmarket"])
             idmkm = "NULL" if idmkm is None else "'{}'".format(idmkm.group(1))
             idck = re.match(reIDCK, card["purchase_uris"]["card_kingdom"])
             idck = "NULL" if idck is None else idck.group(1)
-            sql += "('{}','{}','{}',{},{},{},'{}','{}'),".format(card["id"],card["name"].replace("'", "''"),card["set"],idmkm,idck,card["reprint"],card["image_uri"],card["collector_number"])
+            sql += "('{}','{}','{}',{},{},{},'{}','{}',{}),".format(card["id"],card["name"].replace("'", "''"),card["set"],idmkm,idck,card["reprint"],card["image_uri"],card["collector_number"],card["multiverse_id"] if "multiverse_id" in card else "NULL")
         print("Pagina {}: {}".format(page, phppgadmin.execute(sql[:-1])))
         if (cards["has_more"]):
             page += 1
         else:
             break
+
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")

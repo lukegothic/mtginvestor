@@ -89,37 +89,6 @@ class ExchangeRate:
         sys.stdout.write("OK [1 = {}]".format(rate))
         print("")
         return rate
-class Deckbox:
-    cachedir = "{}/deckbox/{}".format(basecachedir, "{}")
-    def inventory(usecached):
-        cachedir = Deckbox.cachedir.format("inventory")
-        sys.stdout.write("Obteniendo inventario {}...".format("lukegothic"))
-        sys.stdout.flush()
-
-        req = requests.get("https://deckbox.org/sets/export/125700?format=csv&f=&s=&o=&columns=Image%20URL")
-        if not os.path.exists(cachedir):
-            os.makedirs(cachedir)
-        filename = "{}/{}.csv".format(cachedir, time.strftime("%Y%m%d_%H%M%S"));
-        with open(filename, "w") as f:
-            f.write(req.text);
-        inventory = []
-        reID = "(\d*).jpg$"
-        sys.stdout.write("OK")
-        print("")
-        with open(filename) as f:
-            reader = csv.DictReader(f, delimiter=",", quotechar='"')
-            for row in reader:
-                id = re.search(reID, row["Image URL"]).group(1)
-                inventorycard = None
-                for card in inventory:
-                    if (card.id == id):
-                        inventorycard = card
-                        break
-                if (inventorycard is None):
-                    inventorycard = InventoryCard(id, row["Name"], row["Edition"])
-                    inventory.append(inventorycard)
-                inventorycard.entries.append(CardDetails(0,(int)(row["Count"]),True if row["Foil"] == "foil" else False, row["Language"],row["Condition"]))
-        return inventory
 class CK:
     cachedir = "{}/ck/{}".format(basecachedir, "{}")
     def crawlEditions():

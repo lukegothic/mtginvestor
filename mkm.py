@@ -1,107 +1,152 @@
-# -*- coding: utf-8 -*-
-class CardPrice:
-	def __init__(self, price=0, available=0, foil=False):
-		self.price = price
-		self.available = available
-		self.foil = foil
-class Card:
-	def __init__(self, id=0, code='', edition=''):
-		self.id = id
-		self.code = code
-		self.edition = edition
-		self.prices = []
-
+from mkmsdk.mkm import mkm
 from lxml import html
-import requests
-import re
-import codecs
+import os, re, sys, json, requests
+def getPriceDataFromHTML(page):
+    prices = []
+    tree = html.fromstring(page)
+    for row in tree.xpath('//tbody[@id="articlesTable"]/tr[not(@class)]'):
+        itemlocation = row.xpath(".//td[@class='Seller']/span/span/span[@class='icon']")[0].attrib["onmouseover"]
+        itemlocation = re.search("'Item location: (.*)'", itemlocation).group(1)
+        seller = row.xpath(".//td[@class='Seller']/span/span/a")[0].attrib["href"].replace("/en/Magic/Users/", "")
+        price = row.xpath(".//td[contains(@class,'st_price')]")[0].text_content().replace(",",".").replace("€","")
+        available = row.xpath(".//td[contains(@class,'st_ItemCount')]")[0].text_content()
+        ppu = re.search('\(PPU: (.*?)\)', price)
+        if not ppu is None:
+            price = ppu.group(1)
+            available = "4"
+        prices.append({ "location": itemlocation, "seller": seller, "price": price, "available": (int)(available) })
+    return prices
+def getPriceData(card):
+    baseurl = "https://www.cardmarket.com/en/Magic"
+    basedir = "__mycache__/mkm/prices"
+    if not os.path.exists(basedir):
+        os.makedirs(basedir)
+    for entry in card["entries"]:
+        isFoil = "Y" if entry["isFoil"] else "N"
+        productFilter = {
+            "productFilter[sellerRatings][]": ["1", "2"],
+            "productFilter[idLanguage][]": [entry["idLanguage"]],
+            "productFilter[condition][]": ["MT", "NM"],
+            "productFilter[isFoil]": isFoil
+        }
+        carddir = "{}/{}".format(basedir, card["idmkm"])
+        if not os.path.exists(carddir):
+            os.makedirs(carddir)
+        filete = "{}/{}{}.html".format(carddir, entry["idLanguage"], isFoil)
+        try:
+            with open(filete, "r", encoding="utf-8") as f:
+                data = f.read()
+        except:
+            resp = requests.post("{}/Products/Singles/{}".format(baseurl, card["idmkm"]), productFilter, headers={}, timeout = 10)
+            data = resp.text
+            with open(filete, "w", encoding="utf-8") as f:
+                f.write(data)
+        if data != "":
+            prices = getPriceDataFromHTML(data)
+            if (len(prices) > 0):
+                print(prices[0]["price"])
+            else:
+                print("Not available")
+        else:
+            pass #relanzar
+def getMasterData():
+    basedir = "__offlinecache__/mkm/basedata"
+    if not os.path.exists(basedir):
+        os.makedirs(basedir)
 
-cards = []
-cards.append(Card(52582,"Disallow","Aether+Revolt"))
-cards.append(Card(81839,"Whir+of+Invention","Aether+Revolt"))
+    # siempre pedimos la lista de sets actualizada, asi si falta alguno se pedira
+    sys.stdout.write("Obteniendo sets...")
+    sys.stdout.flush()
+    filete = basedir + "/sets.json"
+    try:
+        resp = mkm.market_place.expansion(game=1)
+        with open(filete, "w") as f:
+            f.write(resp.text)
+        sets = resp.json()
+        sys.stdout.write("última version online\n")
+    except:
+        try:
+            with open(filete) as f:
+                sets = json.loads(f.read())
+            sys.stdout.write("cache\n")
+        except:
+            sys.exit("[MKM] No se ha podido obtener los datos de inventario")
+    allcards = []
+    sys.stdout.write("Obteniendo cartas...")
+    sys.stdout.flush()
+    for set in sets["expansion"]:
+        filete = "{}/{}.json".format(basedir, set["idExpansion"])
+        try:
+            with open(filete) as f:
+                cards = json.loads(f.read())
+        except:
+            resp = mkm.market_place.expansion_singles(game=1, name=set["name"])
+            with open(filete, "w") as f:
+                f.write(resp.text)
+            cards = resp.json()
+        allcards.extend(cards["card"])
+    sys.stdout.write("OK\n")
+    return allcards
 
+def getCommentByPrice(article):
+    #"●▬▬▬▬๑۩ {} ۩๑▬▬▬▬▬●"
+    #",.-~*´¨¯¨`*·~-.¸-[{}]-,.-~*´¨¯¨`*·~-.¸"
+    #"(╯°□°）╯︵ ┻━┻ {}"
+    price = article["price"] / (4 if article["isPlayset"] == "true" else 1)
+    if price >= 15:
+        comment = "[ Perfect Size and Bubble Envelope ]"
+    elif price >= 3:
+        comment = "[ Perfect Size ]"
+    else:
+        comment = "[ You Win ]"
+    return '-~*{}*~- from MTG(c) Judge'.format(comment)
 
-productFilter = data = { "productFilter[sellerRatings][]": ["1", "2"], "productFilter[idLanguage][]": [1], "productFilter[condition][]": ["MT", "NM"], "productFilter[isFoil]": "Y" }
-rBody = '<tbody id=\"articlesTable\">(.*?)<\/tbody>'
-rRow = '<tr.*?td class="Price.*?>.*?>.*?>(.*?)<\/div>.*?td class="Available.*?>(.*?)<\/td>.*?\/tr>'
-rPPU = '\(PPU: (.*?)\)'
-f = open("mkm_prices.sql", "w")
-f.close()
-for card in cards:
-	print("{}[{}]".format(card.code, card.edition))
-	filename = "mkmprices/{}_{}.html".format(card.edition, card.code)
-	try:
-		f = codecs.open(filename, "r", "utf-8")
-		data = f.read()
-		f.close()
-	except IOError:
-		page = requests.post("https://www.magiccardmarket.eu/Products/Singles/" + card.edition + "/" + card.code, productFilter)
-		data = page.text
-		f = codecs.open(filename, "w", "utf-8")
-		f.write(data)
-		f.close()
-
-	tree = html.fromstring(data)
-	for row in tree.xpath('//tbody[@id="articlesTable"]/tr[not(@class)]'):
-		price = row.xpath(".//td[contains(@class,'st_price')]")[0].text_content().replace(",",".").replace("€","")
-		available = row.xpath(".//td[contains(@class,'st_ItemCount')]")[0].text_content()
-		ppu = re.search(rPPU, price)
-		if not ppu is None:
-			price = ppu.group(1)
-			available = "4"
-		card.prices.append(CardPrice(price, available))
-	if len(card.prices) > 0:
-		print("Encontrados {} precios".format(len(card.prices)))
-		f = open("mkm_prices.sql", "a")
-		f.write("--{}[{}]\n".format(card.code, card.edition))
-		for cp in card.prices:
-			f.write("INSERT INTO mkm_cardprices(cardid,price,foil,available) VALUES({0},{1},true,{2});\n".format(card.id, cp.price, cp.available))
-		f.close()
-	else:
-		print("Precios no encontrados")
-
-#select 'cards.append(Card('||cast(mkm.id as varchar)||','||chr(34)||mkm.code||chr(34)||','||chr(34)||mkm.setcode||chr(34)||'))' from edhtocardusage c left join mkm_cards mkm on c.name = mkm.name where quantity > 2000 order by setcode
-#select id, name,editionid,sum(p.available) available,min(price) pricemin from mkm_cards c inner join mkm_cardprices p on c.id = p.cardid group by id,name,editionid order by available
-
-cachedir = "cache/mkm/prices"
-
-if not os.path.exists(cachedir):
-	os.makedirs(cachedir)
-
-lock = threading.Lock()
-
-def do_work(url):
-	#analizar url y determinar que hacer con sus contenidos
-	filename = "ck/{}/{}{}.html".format(edition.name.replace(":",""), "foil" if edition.foil else "", edition.page)
-	try:
-		f = codecs.open(filename, "r", "utf-8")
-		#todo: invalidar cache si ha pasado 1 dia os.path.getmtime(path)
-		data = f.read()
-		f.close()
-	except IOError:
-		page = requests.get("{}?page={}&filter%5Bipp%5D={}".format(edition.url, edition.page, cpp))
-		data = page.text
-		directory = "ck/{0}".format(edition.name.replace(":",""))
-		with lock:
-			if not os.path.exists(directory):
-				os.makedirs(directory)
-		f = codecs.open(filename, "w", "utf-8")
-		f.write(data)
-		f.close()
-
-def worker():
-	while True:
-		item = q.get()
-		do_work(item)
-		q.task_done()
-
-q = Queue()
-
-page = requests.get("https://www.magiccardmarket.eu/Expansions")
-tree = html.fromstring(page.text)
-editions = tree.xpath("//a[@class='alphabeticExpansion']")
-for edition in editions:
-	print(edition.attrib["href"].replace("Expansions","Products/Singles"))
-	#q.put(edition.attrib["href"].replace("Expansions","Products/Singles"))
-
-print('time:',time.perf_counter() - start)
+def postStock(cards):
+    # mkm.stock_management.post_stock(data = {
+    #   'article': [
+    #     {
+    #         'idProduct': 261427,
+    #         'idLanguage': 1,
+    #         'comments': 'xxxxxxxxx',
+    #         'count': 4,
+    #         'price': 99.99,
+    #         'condition': 'EX',
+    #         'isFoil': 'false',
+    #         'isSigned': 'false',
+    #         'isPlayset': 'false'
+    #     }
+    #   ]
+    # })
+    for card in cards:
+        if card["set"] != "":
+            sys.stdout.write("[{}] {} ({}) ".format("X" if "idmkm" in card else " ", card["name"], card["set"]))
+            sys.stdout.flush()
+            if "idmkm" in card:
+                getPriceData(card)
+            else:
+                print()
+        else:
+            print("[·] {} ()".format(card["name"]))
+def toPostableArticle(article):
+    return {
+        "idArticle": article["idArticle"],
+        "idLanguage": article["language"]["idLanguage"],
+        "comments": article["comments"],
+        "count": article["count"],
+        "price": article["price"],
+        "condition": article["condition"],
+        "isFoil": "true" if article["isFoil"] else "false",
+        "isSigned": "true" if article["isSigned"] else "false",
+        "isPlayset": "true" if article["isPlayset"] else "false"
+    }
+def updateStockComments():
+    stock = mkm.stock_management.get_stock().json()
+    articles = []
+    for stockitem in stock["article"]:
+        article = toPostableArticle(stockitem)
+        article["comments"] = getCommentByPrice(article)
+        articles.append(article)
+    sys.stdout.write("Updating stock...")
+    sys.stdout.flush()
+    mkm.stock_management.put_stock(data = { "article": articles })
+    sys.stdout.write("OK\n")
