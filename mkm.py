@@ -1,6 +1,17 @@
 from mkmsdk.mkm import mkm
 from lxml import html
-import os, re, sys, json, requests
+from queue import Queue
+import os, re, sys, time, json, requests
+
+import time
+import re
+import threading
+from queue import Queue
+from lxml import html
+
+q = None
+lock = threading.Lock()
+
 def getPriceDataFromHTML(page):
     prices = []
     tree = html.fromstring(page)
@@ -21,39 +32,36 @@ def getPriceData(card):
     basedir = "__mycache__/mkm/prices"
     if not os.path.exists(basedir):
         os.makedirs(basedir)
-    for entry in card["entries"]:
-        isFoil = "Y" if entry["isFoil"] else "N"
-        productFilter = {
-            "productFilter[sellerRatings][]": ["1", "2"],
-            "productFilter[idLanguage][]": [entry["idLanguage"]],
-            "productFilter[condition][]": ["MT", "NM"],
-            "productFilter[isFoil]": isFoil
-        }
-        carddir = "{}/{}".format(basedir, card["idmkm"])
-        if not os.path.exists(carddir):
+    isFoil = "Y" if card["isFoil"] else "N"
+    productFilter = {
+        "productFilter[sellerRatings][]": ["1", "2"],
+        "productFilter[idLanguage][]": [card["idLanguage"]],
+        "productFilter[condition][]": ["MT", "NM"],
+        "productFilter[isFoil]": isFoil
+    }
+    carddir = "{}/{}".format(basedir, card["idmkm"])
+    if not os.path.exists(carddir):
+        with lock:
             os.makedirs(carddir)
-        filete = "{}/{}{}.html".format(carddir, entry["idLanguage"], isFoil)
-        try:
-            with open(filete, "r", encoding="utf-8") as f:
-                data = f.read()
-        except:
-            resp = requests.post("{}/Products/Singles/{}".format(baseurl, card["idmkm"]), productFilter, headers={}, timeout = 10)
-            data = resp.text
+    filete = "{}/{}{}.html".format(carddir, card["idLanguage"], isFoil)
+    try:
+        with open(filete, "r", encoding="utf-8") as f:
+            data = f.read()
+    except:
+        resp = requests.post("{}/Products/Singles/{}".format(baseurl, card["idmkm"]), productFilter, headers={}, timeout = 10)
+        data = resp.text
+        if data != "":
             with open(filete, "w", encoding="utf-8") as f:
                 f.write(data)
-        if data != "":
-            prices = getPriceDataFromHTML(data)
-            if (len(prices) > 0):
-                print(prices[0]["price"])
-            else:
-                print("Not available")
-        else:
-            pass #relanzar
+    if data != "":
+        card["mkmprices"] = getPriceDataFromHTML(data)
+        print(card["idmkm"])
+    else:
+        pass #relanzar
 def getMasterData():
     basedir = "__offlinecache__/mkm/basedata"
     if not os.path.exists(basedir):
         os.makedirs(basedir)
-
     # siempre pedimos la lista de sets actualizada, asi si falta alguno se pedira
     sys.stdout.write("Obteniendo sets...")
     sys.stdout.flush()
@@ -92,10 +100,9 @@ def getCommentByPrice(article):
     #"●▬▬▬▬๑۩ {} ۩๑▬▬▬▬▬●"
     #",.-~*´¨¯¨`*·~-.¸-[{}]-,.-~*´¨¯¨`*·~-.¸"
     #"(╯°□°）╯︵ ┻━┻ {}"
-    price = article["price"] / (4 if article["isPlayset"] == "true" else 1)
-    if price >= 15:
+    if article["price"] >= 15:
         comment = "[ Perfect Size and Bubble Envelope ]"
-    elif price >= 3:
+    elif article["price"] / (4 if article["isPlayset"] == "true" else 1) >= 3:
         comment = "[ Perfect Size ]"
     else:
         comment = "[ You Win ]"
@@ -117,16 +124,24 @@ def postStock(cards):
     #     }
     #   ]
     # })
+    def worker():
+        while True:
+            getPriceData(q.get())
+            time.sleep(0.05)
+            q.task_done()
+            sys.stdout.write("{:>4}".format(q.qsize()))
+    q = Queue()
+    for i in range(6):
+        t = threading.Thread(target=worker)
+        t.daemon = True
+        t.start()
     for card in cards:
-        if card["set"] != "":
-            sys.stdout.write("[{}] {} ({}) ".format("X" if "idmkm" in card else " ", card["name"], card["set"]))
-            sys.stdout.flush()
-            if "idmkm" in card:
-                getPriceData(card)
-            else:
-                print()
-        else:
-            print("[·] {} ()".format(card["name"]))
+        if "idmkm" in card:
+            q.put(card)
+    sys.stdout.write("Items restantes...")
+    sys.stdout.flush()
+    q.join()
+
 def toPostableArticle(article):
     return {
         "idArticle": article["idArticle"],
