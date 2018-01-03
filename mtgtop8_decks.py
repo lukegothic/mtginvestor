@@ -9,10 +9,11 @@ import os
 import codecs
 import copy
 import math
+import csv
 
 theformat = "PAU"
 meses = 2
-cachedir = "cache/mtgtop8/decks"
+cachedir = "__mycache__/mtgtop8/decks"
 
 if not os.path.exists(cachedir):
 	os.makedirs(cachedir)
@@ -96,6 +97,7 @@ def doSearch():
 	# Se cachean porque no cambian
 	# Aqui tambien se realiza la conversion de decklists a objetos deck
 	# Dado que se realizan aperturas de ficheros
+	deckids.sort()
 	for i in range(4):
 		t = threading.Thread(target=deckworker)
 		t.daemon = True
@@ -105,51 +107,60 @@ def doSearch():
 	q.join()
 
 #start = time.perf_counter()
-archetypes = [{
-	"name": "Burn",
-	"cards": ["Lava Spike"]
+archetypes = [ {
+	"name": "Inside Out Combo",
+	"cards": ["Tireless Tribe", "Inside Out"]
+}, {
+	"name": "Flicker Combo",
+	"cards": ["God-Pharaoh's Faithful"]
+}, {
+	"name": "Blitz Combo",
+	"cards": ["Kiln Fiend", "Nivix Cyclops"]
+}, {
+	"name": "Affinity",
+	"cards": ["Frogmite", "Myr Enforcer"]
 },{
 	"name": "Tron",
 	"cards": ["Urza's Tower"]
 }, {
 	"name": "Elves",
-	"cards": ["Elvish Vanguard"]
+	"cards": ["Birchlore Rangers"]
 }, {
 	"name": "Stompy",
 	"cards": ["Young Wolf", "Skarrgan Pit-Skulk"]
 }, {
+	"name": "Bogles",
+	"cards": ["Slippery Bogle"]
+}, {
+	"name": "Slivers",
+	"cards": ["Muscle Sliver"]
+},{
+	"name": "Tortured Existence",
+	"cards": ["Tortured Existence"]
+},{
+	"name": "Burn",
+	"cards": ["Lava Spike", "Chain Lightning"]
+}, {
 	"name": "Delver",
 	"cards": ["Delver of Secrets"]
 }, {
-	"name": "Inside Out Combo",
-	"cards": ["Tireless Tribe", "Inside Out"]
+	"name": "Ninja Aggro", # solape con delver
+	"cards": ["Faerie Miscreant", "Ninja of the Deep Hours", "Spellstutter Sprite"]
 }, {
-	"name": "Tortured Existence",
-	"cards": ["Tortured Existence"]
-}, {
-	"name": "Bogles",
-	"cards": ["Slippery Bogle", "Gladecover Scout"]
-}, {
-	"name": "Affinity",
-	"cards": ["Frogmite", "Myr Enforcer"]
-}, {
-	"name": "Flicker Combo",
-	"cards": ["God-Pharaoh's Faithful"]
-}, {
-	"name": "Reanimator",
+	"name": "Reanimator", # solape con UB control
 	"cards": ["Exhume"]
+}, {
+	"name": "UB Control",
+	"cards": ["Chainer's Edict", "Counterspell"]
 }, {
 	"name": "Boros",
 	"cards": ["Glint Hawk"]
 }, {
-	"name": "Slivers",
-	"cards": ["Muscle Sliver"]
-}, {
-	"name": "Blitz Combo",
-	"cards": ["Kiln Fiend"]
+	"name": "RW Tokens", # solape con Boros
+	"cards": ["Battle Screech", "Dragon Fodder"]
 }, {
 	"name": "MBC",
-	"cards": ["Chittering Rats", "Sign in Blood"]
+	"cards": ["Chittering Rats", "Phyrexian Rager"]
 }, {
 	"name": "Orzhov Control",
 	"cards": ["Pestilence", "Guardian of the Guildpact"]
@@ -159,20 +170,16 @@ archetypes = [{
 }, {
 	"name": "Goblins",
 	"cards": ["Goblin Bushwhacker"]
-}, {
-	"name": "UB Control",
-	"cards": ["Chainer's Edict", "Counterspell", "Echoing Decay"]
 }]
 
 theformat = "PAU"
-cuantosmeses = 2
-thedate = (datetime.date.today() - datetime.timedelta(cuantosmeses * 365/12)).strftime("%d/%m/%Y")
+meses = 3
+thedate = (datetime.date.today() - datetime.timedelta(meses * 365/12)).strftime("%d/%m/%Y")
 doSearch()
 print("Se han encontrado {} decks desde {}".format(len(decks), thedate))
 for arch in archetypes:
 	arch["decks"] = []
-	print(arch["name"])
-	for deck in decks:
+	for i, deck in reversed(list(enumerate(decks))):
 		archcardindeck = 0
 		for archcard in arch["cards"]:
 			for card in deck:
@@ -181,7 +188,71 @@ for arch in archetypes:
 					break
 		if archcardindeck == len(arch["cards"]):
 			arch["decks"].append(deck)
-	print(len(arch["decks"]))
+			decks.pop(i)
+	print("{} {} - Keycards:".format(len(arch["decks"]), arch["name"]))
+	mcd = {}
+	if (len(arch["decks"]) > 1):
+		for deck in arch["decks"]:
+			for card in deck:
+				if not card["issb"]:
+					if not card["name"] in mcd:
+						mcd[card["name"]] = 1
+					else:
+						mcd[card["name"]] += 1
+		for card in mcd:
+			pct = mcd[card] * 100 / len(arch["decks"])
+			if (pct > 50):
+				print("[{:.0f}%] {}".format(pct, card))
+		print("")
+	else:
+		print("ARQ unico\n")
+if len(decks) > 0:
+	print("Hay {} sin arquetipo".format(len(decks)))
+	input()
+	for i, deck in enumerate(decks):
+		print("SIN ARQ {}".format(i+1))
+		for card in deck:
+			print("{}{} {}".format("SB: " if card["issb"] else "", card["quantity"], card["name"]))
+		print()
+
+fields = ["card", "used"]
+paupercards = {}
+for arch in archetypes:
+	fields.append(arch["name"])
+	for deck in arch["decks"]:
+		for card in deck:
+			if not card["issb"]:
+				if not card["name"] in paupercards:
+					paupercards[card["name"]] = {}
+				if not arch["name"] in paupercards[card["name"]]:
+					paupercards[card["name"]][arch["name"]] = 1
+				else:
+					paupercards[card["name"]][arch["name"]] += 1
+	# for card in mcd:
+	# 	pct = mcd[card] * 100 / len(arch["decks"])
+	# 	if (pct > 50):
+	# 		print("[{:.0f}%] {}".format(pct, card))
+
+#print(paupercards)
+# montar objeto final
+finalobj = []
+for card in paupercards:
+	print(card)
+	c = { "card": card, "used": 0 }
+	for arch in archetypes:
+		if arch["name"] in paupercards[card]:
+			c[arch["name"]] = "{:.0%}".format(paupercards[card][arch["name"]] / len(arch["decks"]))
+			c["used"] += 1
+		else:
+			c[arch["name"]] = 0
+	finalobj.append(c)
+with open("output/mtgtop8_paupercards.csv", "w", newline='\n') as f:
+	writer = csv.DictWriter(f, fieldnames=fields, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+	writer.writeheader()
+	for card in finalobj:
+		writer.writerow(card)
+
+#print(decks)
 
 #print('time:',time.perf_counter() - start)
 
