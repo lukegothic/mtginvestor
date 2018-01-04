@@ -10,6 +10,8 @@ import codecs
 import copy
 import math
 import csv
+import sqlite3
+import mkm
 
 theformat = "PAU"
 meses = 2
@@ -105,6 +107,36 @@ def doSearch():
 	for deckid in deckids:
 		q.put(deckid)
 	q.join()
+def getMinEuroPrice(cards):
+	cardnames = []
+	for card in cards:
+	    cardnames.append("name LIKE '{}%'".format(card.replace("'", "''")))
+	cardnames = " OR ".join(cardnames)
+	dbconn = sqlite3.connect("__offlinecache__/scryfall/scryfall.db")
+	dbconn.row_factory = sqlite3.Row
+	c = dbconn.cursor()
+	dbcards = c.execute("SELECT * FROM cards WHERE {}".format(cardnames)).fetchall()
+	priceobj = {}
+	for card in cards:
+		minprice = 10000
+		matches = []
+		for dbcard in dbcards:
+			if (dbcard["name"].startswith(card)):
+				matches.append(dbcard)
+		print("{} ({} versiones)".format(card, len(matches)))
+		for m in matches:
+			if not m["idmkm"] is None:
+				qcard = {
+					"idmkm": m["idmkm"],
+					"isFoil": False,
+					"idLanguage": "EN"
+				}
+				mkm.getPriceData(qcard)
+				if qcard["mkmprice"] < minprice:
+					minprice = qcard["mkmprice"]
+		priceobj[card] = minprice
+		print("Min: {}".format(priceobj[card]))
+	return priceobj
 
 #start = time.perf_counter()
 archetypes = [ {
@@ -189,23 +221,6 @@ for arch in archetypes:
 		if archcardindeck == len(arch["cards"]):
 			arch["decks"].append(deck)
 			decks.pop(i)
-	print("{} {} - Keycards:".format(len(arch["decks"]), arch["name"]))
-	mcd = {}
-	if (len(arch["decks"]) > 1):
-		for deck in arch["decks"]:
-			for card in deck:
-				if not card["issb"]:
-					if not card["name"] in mcd:
-						mcd[card["name"]] = 1
-					else:
-						mcd[card["name"]] += 1
-		for card in mcd:
-			pct = mcd[card] * 100 / len(arch["decks"])
-			if (pct > 50):
-				print("[{:.0f}%] {}".format(pct, card))
-		print("")
-	else:
-		print("ARQ unico\n")
 if len(decks) > 0:
 	print("Hay {} sin arquetipo".format(len(decks)))
 	input()
@@ -228,17 +243,17 @@ for arch in archetypes:
 					paupercards[card["name"]][arch["name"]] = 1
 				else:
 					paupercards[card["name"]][arch["name"]] += 1
-	# for card in mcd:
-	# 	pct = mcd[card] * 100 / len(arch["decks"])
-	# 	if (pct > 50):
-	# 		print("[{:.0f}%] {}".format(pct, card))
-
-#print(paupercards)
+if True:
+	print("Obteniendo precios de {} staples".format(len(paupercards)))
+	fields.append("price_E")
+	pricedata_eu = getMinEuroPrice(paupercards)
+# print(paupercards)
 # montar objeto final
 finalobj = []
 for card in paupercards:
-	print(card)
 	c = { "card": card, "used": 0 }
+	if True:
+		c["price_E"] = "{}".format(pricedata_eu[card]).replace(".", ",") if not card in ["Plains", "Island", "Swamp", "Mountain", "Forest"] else 0
 	for arch in archetypes:
 		if arch["name"] in paupercards[card]:
 			c[arch["name"]] = "{:.0%}".format(paupercards[card][arch["name"]] / len(arch["decks"]))

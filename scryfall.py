@@ -3,17 +3,30 @@ import re
 import sys
 import json
 import requests
-import phppgadmin
+#import phppgadmin
+import sqlite3
 
 basedir = "__mycache__/scryfall"
 if (not os.path.exists(basedir)):
     os.makedirs(basedir)
-
+dbdir = "__offlinecache__/scryfall"
+if (not os.path.exists(dbdir)):
+    os.makedirs(dbdir)
+dbfile = "{}/scryfall.db".format(dbdir)
+def create_db():
+    dbconn = sqlite3.connect(dbfile)
+    c = dbconn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS sets
+             (code text PRIMARY KEY, name text, set_type text, released_at text, block_code text, block text, parent_set_code text, card_count integer, digital integer, foil integer, icon_svg_uri text, search_uri text)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS cards
+             (id text PRIMARY KEY, name text, setcode text, idmkm text, idck text, reprint integer, image_uri text, collector_number integer, multiverse_id integer)''')
+    dbconn.commit()
+    dbconn.close()
 def process_sets():
     cachedir = "{}/sets".format(basedir)
     if (not os.path.exists(cachedir)):
         os.makedirs(cachedir)
-    phppgadmin.execute("DELETE FROM scr_sets")
+    #phppgadmin.execute("DELETE FROM scr_sets")
     filete = "{}/sets.json".format(cachedir)
     try:
         with open(filete) as f:
@@ -24,18 +37,40 @@ def process_sets():
         with open(filete, "w") as f:
             f.write(data)
     sets = json.loads(data)
+    setsinsert = []
     sql = "INSERT INTO scr_sets(code,name,set_type,released_at,block_code,block,parent_set_code,card_count,digital,foil,icon_svg_uri,search_uri) VALUES"
     for set in sets["data"]:
-        sql += "('{}','{}','{}',{},{},{},{},{},{},{},'{}','{}'),".format(set["code"], set["name"].replace("'", "''"), set["set_type"], "'{}'".format(set["released_at"]) if "released_at" in set else "NULL", "'{}'".format(set["block_code"]) if "block_code" in set else "NULL", "'{}'".format(set["block"].replace("'", "''")) if "block" in set else "NULL", "'{}'".format(set["parent_set_code"]) if "parent_set_code" in set else "NULL", set["card_count"], set["digital"] if "digital" in set else "false", set["foil"] if "foil" in set else "false", set["icon_svg_uri"], set["search_uri"])
-    print(phppgadmin.execute(sql[:-1]))
+        setsinsert.append(
+            (
+                set["code"],
+                set["name"],
+                set["set_type"],
+                '{}'.format(set["released_at"]) if "released_at" in set else None,
+                '{}'.format(set["block_code"]) if "block_code" in set else None,
+                '{}'.format(set["block"].replace("'", "''")) if "block" in set else None,
+                '{}'.format(set["parent_set_code"]) if "parent_set_code" in set else None,
+                set["card_count"],
+                (1 if set["digital"] else 0) if "digital" in set else 0,
+                (1 if set["foil"] else 0) if "foil" in set else 0,
+                set["icon_svg_uri"],
+                set["search_uri"]
+            )
+        )
+    dbconn = sqlite3.connect(dbfile)
+    c = dbconn.cursor()
+    c.execute("DELETE FROM sets")
+    c.executemany('INSERT INTO sets VALUES (?,?,?,?,?,?,?,?,?,?,?,?)', setsinsert)
+    dbconn.commit()
+    print("Insertados {} de {} sets".format(c.execute("SELECT count(*) as cnt FROM sets").fetchone()[0], len(setsinsert)))
+    dbconn.close()
 def process_cards():
     cachedir = "{}/cards".format(basedir)
     if (not os.path.exists(cachedir)):
         os.makedirs(cachedir)
-    phppgadmin.execute("DELETE FROM scr_cards")
     reIDMKM = "https:\/\/www\.cardmarket\.com\/Magic\/Products\/Singles\/(.*?)\?"
     reIDCK = "https:\/\/www\.cardkingdom\.com\/catalog\/item\/(\d*)?\?"
     page = 1
+    cardsinsert = []
     while True:
         filete = "{}/{}.json".format(cachedir, page)
         try:
@@ -47,19 +82,44 @@ def process_cards():
             with open(filete, "w", encoding="utf-8") as f:
                 f.write(data)
         cards = json.loads(data)
-        sql = "INSERT INTO scr_cards(id,name,set,idmkm,idck,reprint,image_uri,collector_number,multiverse_id) VALUES"
         for card in cards["data"]:
             idmkm = re.match(reIDMKM, card["purchase_uris"]["magiccardmarket"])
-            idmkm = "NULL" if idmkm is None else "'{}'".format(idmkm.group(1))
+            idmkm = None if idmkm is None else idmkm.group(1)
             idck = re.match(reIDCK, card["purchase_uris"]["card_kingdom"])
-            idck = "NULL" if idck is None else idck.group(1)
-            sql += "('{}','{}','{}',{},{},{},'{}','{}',{}),".format(card["id"],card["name"].replace("'", "''"),card["set"],idmkm,idck,card["reprint"],card["image_uri"],card["collector_number"],card["multiverse_id"] if "multiverse_id" in card else "NULL")
-        print("Pagina {}: {}".format(page, phppgadmin.execute(sql[:-1])))
+            idck = None if idck is None else idck.group(1)
+            if (not "image_uris" in card):
+                image_uris = []
+                if ("card_faces" in card):
+                    for face in card["card_faces"]:
+                        image_uris.append(face["image_uris"]["normal"])
+                image_uris = ";".join(image_uris)
+            else:
+                image_uris = card["image_uris"]["normal"]
+            cardsinsert.append(
+                (
+                    card["id"],
+                    card["name"],
+                    card["set"],
+                    idmkm,
+                    idck,
+                    1 if card["reprint"] else 0,
+                    image_uris,
+                    card["collector_number"],
+                    card["multiverse_id"] if "multiverse_id" in card else None
+                )
+            )
+        #print("Pagina {}: {}".format(page, phppgadmin.execute(sql[:-1])))
         if (cards["has_more"]):
             page += 1
         else:
             break
-
+    dbconn = sqlite3.connect(dbfile)
+    c = dbconn.cursor()
+    c.execute("DELETE FROM cards")
+    c.executemany('INSERT INTO cards VALUES (?,?,?,?,?,?,?,?,?)', cardsinsert)
+    dbconn.commit()
+    print("Insertadas {} de {} cartas".format(c.execute("SELECT count(*) as cnt FROM cards").fetchone()[0], len(cardsinsert)))
+    dbconn.close()
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")
@@ -68,6 +128,7 @@ def menu():
     print("  0. Salir")
     return input("Opcion: ")
 
+create_db()
 options = {
     "1": process_sets,
     "2": process_cards
@@ -83,7 +144,6 @@ else:
         os.system('cls')
         options[opt]()
         input("PRESIONA UNA TECLA PARA CONTINUAR")
-
 
 # TODO: cartas relacionadas!!!!
 # select s.name, c.name from scr_cards c left join scr_sets s on c.set = s.code

@@ -12,6 +12,10 @@ from lxml import html
 q = None
 lock = threading.Lock()
 
+def getTrendPriceFromHTML(page):
+    tree = html.fromstring(page)
+    table = tree.xpath("//table[@class='availTable']/tbody/tr")
+    return (float)(table[2].xpath(".//td")[1].text_content().replace(",",".").replace("€",""))
 def getPriceDataFromHTML(page):
     prices = []
     tree = html.fromstring(page)
@@ -28,36 +32,37 @@ def getPriceDataFromHTML(page):
         prices.append({ "location": itemlocation, "seller": seller, "price": price, "available": (int)(available) })
     return prices
 def getPriceData(card):
-    baseurl = "https://www.cardmarket.com/en/Magic"
-    basedir = "__mycache__/mkm/prices"
-    if not os.path.exists(basedir):
-        os.makedirs(basedir)
-    isFoil = "Y" if card["isFoil"] else "N"
-    productFilter = {
-        "productFilter[sellerRatings][]": ["1", "2"],
-        "productFilter[idLanguage][]": [card["idLanguage"]],
-        "productFilter[condition][]": ["MT", "NM"],
-        "productFilter[isFoil]": isFoil
-    }
-    carddir = "{}/{}".format(basedir, card["idmkm"])
-    if not os.path.exists(carddir):
-        with lock:
-            os.makedirs(carddir)
-    filete = "{}/{}{}.html".format(carddir, card["idLanguage"], isFoil)
-    try:
-        with open(filete, "r", encoding="utf-8") as f:
-            data = f.read()
-    except:
-        resp = requests.post("{}/Products/Singles/{}".format(baseurl, card["idmkm"]), productFilter, headers={}, timeout = 10)
-        data = resp.text
+    if (not card["idmkm"] is None):
+        baseurl = "https://www.cardmarket.com/en/Magic"
+        basedir = "__mycache__/mkm/prices"
+        if not os.path.exists(basedir):
+            os.makedirs(basedir)
+        isFoil = "Y" if card["isFoil"] else "N"
+        productFilter = {
+            "productFilter[sellerRatings][]": ["1", "2"],
+            "productFilter[idLanguage][]": [card["idLanguage"]],
+            "productFilter[condition][]": ["MT", "NM"],
+            "productFilter[isFoil]": isFoil
+        }
+        carddir = "{}/{}".format(basedir, card["idmkm"])
+        if not os.path.exists(carddir):
+            with lock:
+                os.makedirs(carddir)
+        filete = "{}/{}{}.html".format(carddir, card["idLanguage"], isFoil)
+        try:
+            with open(filete, "r", encoding="utf-8") as f:
+                data = f.read()
+        except:
+            resp = requests.post("{}/Products/Singles/{}".format(baseurl, card["idmkm"]), productFilter, headers={}, timeout = 10)
+            data = resp.text
+            if data != "":
+                with open(filete, "w", encoding="utf-8") as f:
+                    f.write(data)
         if data != "":
-            with open(filete, "w", encoding="utf-8") as f:
-                f.write(data)
-    if data != "":
-        card["mkmprices"] = getPriceDataFromHTML(data)
-        print(card["idmkm"])
-    else:
-        pass #relanzar
+            card["mkmprices"] = getPriceDataFromHTML(data)
+            card["mkmprice"] = getTrendPriceFromHTML(data)
+        else:
+            pass #relanzar
 def getMasterData():
     basedir = "__offlinecache__/mkm/basedata"
     if not os.path.exists(basedir):
