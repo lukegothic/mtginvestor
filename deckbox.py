@@ -1,6 +1,7 @@
 import os, re, sys, csv, json, utils, requests, phppgadmin
 from PIL import Image
-
+cachedir = "__mycache__/deckbox"
+reID = "(\d*).jpg$"
 translator = {
     "language": {
         "English": 1,
@@ -24,27 +25,37 @@ translator = {
 }
 def isScryfallID(id):
     return id.find("-") != -1
-
-def getInventory(force=False):
-    dbinventoryid = "125700"
-    cachedir = "__mycache__/deckbox/inventory"
-    sys.stdout.write("Obteniendo inventario...")
-    sys.stdout.flush()
+def getExportedData(deckid):
     if not os.path.exists(cachedir):
         os.makedirs(cachedir)
-    filename = "{}/{}.csv".format(cachedir, dbinventoryid);
+    filename = "{}/{}.csv".format(cachedir, deckid);
     # guardar en disco si es necesario
     # borrar si ha pasado 1h
-    if force or not os.path.exists(filename):
-        req = requests.get("https://deckbox.org/sets/export/{}?format=csv&f=&s=&o=&columns=Image%20URL".format(dbinventoryid))
+    if not os.path.exists(filename):
+        req = requests.get("https://deckbox.org/sets/export/{}?format=csv&f=&s=&o=&columns=Image%20URL".format(deckid))
         with open(filename, "w") as f:
             f.write(req.text);
     sys.stdout.write("OK")
     print("")
+    return filename
+def getDeck(deckid):
+    cards = []
+    filename = getExportedData(deckid)
+    with open(filename) as f:
+        reader = csv.DictReader(f, delimiter=",", quotechar='"')
+        for row in reader:
+            cards.append({
+                "id": re.search(reID, row["Image URL"]).group(1),
+                "name": row["Name"]
+            })
+    return cards
+def getInventory(force=False):
+    sys.stdout.write("Obteniendo inventario...")
+    sys.stdout.flush()
+    filename = getExportedData("125700")
     #leer y convertir en dict
     sys.stdout.write("Leyendo inventario...")
     sys.stdout.flush()
-    reID = "(\d*).jpg$"
     cards = []
     multiverse_ids = []
     withoutset = 0
