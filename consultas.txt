@@ -1,0 +1,12 @@
+--CHOLLOS
+select split_part(id,'/',1) as set, split_part(id,'/',2) as name, foil, price, lead, lead - price as diff, (lead * 100 / price) - 100 as diffpct, dense_rank FROM mkm_cardpricesranked t
+where dense_rank <= 1
+and price <= 100
+and (lead * 100 / price) - 100 >= 25
+and lead - price >= 2
+order by diffpct desc
+
+--genera los precios mas bajos
+select json_object_agg("id", "price") from (
+  SELECT distinct id || case when foil then 'F' else 'N' end as id, price FROM mkm_cardpricesranked where dense_rank = 1 order by id
+) t;

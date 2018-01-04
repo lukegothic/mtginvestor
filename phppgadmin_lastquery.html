@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="themes/default/global.css" type="text/css" />
+<link rel="shortcut icon" href="images/themes/default/Favicon.ico" type="image/vnd.microsoft.icon" />
+<link rel="icon" type="image/png" href="images/themes/default/Introduction.png" />
+<script type="text/javascript" src="libraries/js/jquery.js"></script><title>phpPgAdmin - Query Results</title>
+</head>
+<body>
+<div class="topbar"><table style="width: 100%"><tr><td><span class="platform">PostgreSQL 9.4.10</span> running on <span class="host">localhost</span>:<span class="port">5432</span> -- You are logged in as user "<span class="username">postgres</span>"</td><td style="text-align: right"><ul class="toplink">
+	<li><a href="sqledit.php?subject=table&amp;server=localhost%3A5432%3Aallow&amp;database=magic&amp;action=sql" target="sqledit" id="toplink_sql" >SQL</a>
+</li>
+	<li><a href="history.php?subject=table&amp;server=localhost%3A5432%3Aallow&amp;database=magic&amp;action=pophistory" id="toplink_history" >History</a>
+</li>
+	<li><a href="sqledit.php?subject=table&amp;server=localhost%3A5432%3Aallow&amp;database=magic&amp;action=find" target="sqledit" id="toplink_find" >Find</a>
+</li>
+	<li><a href="servers.php?action=logout&amp;logoutServer=localhost%3A5432%3Aallow&amp;server=localhost%3A5432%3Aallow&amp;database=magic" id="toplink_logout" >Logout</a>
+</li>
+</ul>
+</td><script type="text/javascript">
+						$('#toplink_sql').click(function() {
+							window.open($(this).attr('href'),'sqledit:localhost:5432:allow','toolbar=no,width=700,height=500,resizable=yes,scrollbars=yes').focus();
+							return false;
+						});
+
+						$('#toplink_history').click(function() {
+							window.open($(this).attr('href'),'history:localhost:5432:allow','toolbar=no,width=700,height=500,resizable=yes,scrollbars=yes').focus();
+							return false;
+						});
+
+						$('#toplink_find').click(function() {
+							window.open($(this).attr('href'),'sqledit:localhost:5432:allow','toolbar=no,width=700,height=500,resizable=yes,scrollbars=yes').focus();
+							return false;
+						});
+						
+				</script></tr></table></div>
+<div class="trail"><table><tr><td class="crumb"><a href="redirect.php?subject=root"><span class="icon"><img src="images/themes/default/Introduction.png" alt="Database Root" /></span><span class="label">phpPgAdmin</span></a>: </td><td class="crumb"><a href="redirect.php?server=localhost%3A5432%3Aallow&amp;subject=server" title="Server"><span class="icon"><img src="images/themes/default/Server.png" alt="Server" /></span><span class="label">PostgreSQL</span></a><a class="help" href="help.php?help=pg.server&amp;server=localhost%3A5432%3Aallow" title="Help" target="phppgadminhelp">?</a>: </td><td class="crumb"><a href="redirect.php?server=localhost%3A5432%3Aallow&amp;subject=database&amp;database=magic" title="Database"><span class="icon"><img src="images/themes/default/Database.png" alt="Database" /></span><span class="label">magic</span></a><a class="help" href="help.php?help=pg.database&amp;server=localhost%3A5432%3Aallow" title="Help" target="phppgadminhelp">?</a>: </td></tr></table></div>
+<h2>Query Results</h2>
+<p>161 row(s) affected.</p>
+<p>Total runtime: 46.563 ms</p>
+<p>SQL executed.</p>
+<ul class="navlink">
+	<li><a href="database.php?server=localhost%3A5432%3Aallow&amp;database=magic&amp;action=sql" >Edit SQL</a>
+</li>
+</ul>
+<script type="text/javascript">
+	parent.frames.browser.location.reload();
+</script>
+<a href="#" class="bottom_link">back to top</a></body>
+</html>

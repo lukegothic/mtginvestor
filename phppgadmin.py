@@ -1,15 +1,20 @@
 import requests
 from lxml import html
+import hashlib
 import re
+import os
 
 g_session = None
 g_debug = False
 c_server = {
-    "ip": "fotoraton.es",
+    "ip": "192.168.1.14",
     "port": "8080",
     "pgport": "5432",
     "db": "magic"
 }
+cachedir = "__mycache__/phppgadmin"
+if not os.path.exists(cachedir):
+    os.makedirs(cachedir)
 
 def connect():
     global g_session
@@ -29,38 +34,48 @@ def connect():
     except Exception as e:
         print("Server not responding")
         raise Exception()
-def execute(sql):
+def getresults(sql):
+    uniqueid = hashlib.sha1(sql.encode()).hexdigest()
     #TODO: detectar si la sesion se ha caido
     if g_session is None:
         connect()
+    filete = "{}/{}.html".format(cachedir, uniqueid)
+    try:
+        with open(filete, "rb") as f:
+            data = f.read()
+    except:
+        response = g_session.post("http://{}:{}/phppgadmin/{}".format(c_server["ip"], c_server["port"], "sql.php"), { "server": "localhost:{}:allow".format(c_server["pgport"]), "database": "magic", "search_path": "public", "query": sql })
+        data = response.content
+        with open(filete, "wb") as f:
+            f.write(data)
+    return data
+def execute(sql):
+    if g_session is None:
+        connect()
     response = g_session.post("http://{}:{}/phppgadmin/{}".format(c_server["ip"], c_server["port"], "sql.php"), { "server": "localhost:{}:allow".format(c_server["pgport"]), "database": "magic", "search_path": "public", "query": sql })
-    if g_debug:
-        with open("phppgadmin_lastquery.html", "w") as f:
-            f.write(response.text)
-            f.write(sql)
-    tree = html.fromstring(response.content)
-    error = tree.xpath("//pre/text()")
-    if (len(error) > 0):
-        return error[0]
+    if response.ok:
+        with open("phppgadmin_lastquery.html", "wb") as f:
+            f.write(response.content)
+            tree = html.fromstring(response.content)
+            error = tree.xpath("//pre/text()")
+            if (len(error) > 0):
+                return error[0]
+            else:
+                try:
+                    results = tree.xpath("//body/p[1]/text()")[0]
+                    return (int)(re.match("\d*", results).group(0))
+                except:
+                    return 0
     else:
-        try:
-            results = tree.xpath("//body/p[1]/text()")[0]
-            return (int)(re.match("\d*", results).group(0))
-        except:
-            return 0
+        connect()
+        return execute(sql)
 def count(sql):
     return len(query(sql))
 def query(sql):
-    #TODO: detectar si la sesion se ha caido
-    if g_session is None:
-        connect()
-    response = g_session.post("http://{}:{}/phppgadmin/{}".format(c_server["ip"], c_server["port"], "sql.php"), { "server": "localhost:{}:allow".format(c_server["pgport"]), "database": "magic", "search_path": "public", "query": sql })
-    if g_debug:
-        with open("phppgadmin_lastquery.html", "w") as f:
-            f.write(response.text)
+    response = getresults(sql)
     rows = []
     fields = []
-    tree = html.fromstring(response.content)
+    tree = html.fromstring(response)
     results = tree.xpath("//body/table/tr")
     for r in results:
         cells = r.xpath("./td")

@@ -106,11 +106,11 @@ def getInventory(force=False):
             for basecard in basecards:
                 if basecard["name"].startswith(card["name"]):
                     candidates.append(basecard)
-            print(":: {} [{}] ::".format(card["name"], card["set"]))
+            #print(":: {} [{}] ::".format(card["name"], card["set"]))
             # buscamos coincidencia exacta o similar entre las opciones
             for cand in candidates:
                 if cand["set"].startswith(card["set"]) or card["set"].startswith(cand["set"]) or (card["id"] in idlinks and idlinks[card["id"]] == cand["id"]):
-                    print("AUTO: {}".format(cand["set"]))
+                    #print("AUTO: {}".format(cand["set"]))
                     card.update(cand)
                     break
             # ofrecemos interfaz
@@ -132,7 +132,7 @@ def getInventory(force=False):
                     card.update(sel)
                 else:
                     pass
-            print()
+            #print()
     # retirar las indomables..+***
     total = len(cards)
     for i, card in reversed(list(enumerate(cards))):

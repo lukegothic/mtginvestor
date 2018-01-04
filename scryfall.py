@@ -29,6 +29,7 @@ def process_sets():
         sql += "('{}','{}','{}',{},{},{},{},{},{},{},'{}','{}'),".format(set["code"], set["name"].replace("'", "''"), set["set_type"], "'{}'".format(set["released_at"]) if "released_at" in set else "NULL", "'{}'".format(set["block_code"]) if "block_code" in set else "NULL", "'{}'".format(set["block"].replace("'", "''")) if "block" in set else "NULL", "'{}'".format(set["parent_set_code"]) if "parent_set_code" in set else "NULL", set["card_count"], set["digital"] if "digital" in set else "false", set["foil"] if "foil" in set else "false", set["icon_svg_uri"], set["search_uri"])
     print(phppgadmin.execute(sql[:-1]))
 def process_cards():
+    #prompt para confirmar
     cachedir = "{}/cards".format(basedir)
     if (not os.path.exists(cachedir)):
         os.makedirs(cachedir)
@@ -53,24 +54,87 @@ def process_cards():
             idmkm = "NULL" if idmkm is None else "'{}'".format(idmkm.group(1))
             idck = re.match(reIDCK, card["purchase_uris"]["card_kingdom"])
             idck = "NULL" if idck is None else idck.group(1)
-            sql += "('{}','{}','{}',{},{},{},'{}','{}',{}),".format(card["id"],card["name"].replace("'", "''"),card["set"],idmkm,idck,card["reprint"],card["image_uri"],card["collector_number"],card["multiverse_id"] if "multiverse_id" in card else "NULL")
+            if card["layout"] == "transform" or card["layout"] == "double_faced_token":
+                img = "{}||{}".format(card["card_faces"][0]["image_uris"]["border_crop"], card["card_faces"][1]["image_uris"]["border_crop"])
+            else:
+                img = card["image_uris"]["border_crop"] if "border_crop" in card["image_uris"] else card["image_uris"]["normal"]
+            sql += "('{}','{}','{}',{},{},{},'{}','{}',{}),".format(card["id"],card["name"].replace("'", "''"),card["set"],idmkm,idck,card["reprint"], img,card["collector_number"],card["multiverse_id"] if "multiverse_id" in card else "NULL")
         print("Pagina {}: {}".format(page, phppgadmin.execute(sql[:-1])))
         if (cards["has_more"]):
             page += 1
         else:
             break
+def download_images():
+    picsdir = "{}/pics".format(basedir)
+    if (not os.path.exists(picsdir)):
+        os.makedirs(picsdir)
+    cards = phppgadmin.query("SELECT image_uri, name, set, collector_number from scr_cards")
+    reVersions = "\d*([abcd]+)"
+    for c in cards:
+        print("{} [{}]".format(c["name"], c["set"]))
+        if c["image_uri"] != "":
+            setcode = c["set"].upper()
+            if setcode == "CON":
+                setcode = "CFX"
+            setdir = "{}/{}".format(picsdir, setcode)
+            if (not os.path.exists(setdir)):
+                os.makedirs(setdir)
+            # controlar cartas antiguas con varias versiones
+            isVersioned = re.match(reVersions, c["collector_number"])
+            v = ""
+            if "//" not in c["name"] and not isVersioned is None:
+                v = isVersioned.group(1)
+                if v == "a":
+                    v = 1
+                elif v == "b":
+                    v = 2
+                elif v == "c":
+                    v = 3
+                elif v == "d":
+                    v = 4
+            # controlar double faced
+            faces = []
+            if "||" in c["image_uri"]:
+                print(c)
+                names = c["name"].split(" // ")
+                imgs = c["image_uri"].split("||")
+                faces.append({ "name": names[0], "img": imgs[0] })
+                faces.append({ "name": names[1], "img": imgs[1] })
+                print(faces)
+            else:
+                # TODO: las tierras basicas tienen versiones... no se como hacerlo
+                # TODO: si la carta es de flip pero no de transform, nos quedamos sólo con la parte primera del nombre!
+                # TODO: EMN graf rats1 ??? por que le pone numero?
+                # TODO: estas 3 tienen version 1 y 2
+                # Ertai, the Corrupted[PLS]
+                # Skyship Weatherlight[PLS]
+                # Tahngarth, Talruum Hero[PLS]
+                faces.append({ "name": c["name"].replace(" // ", "").replace('"',"").replace(":","").replace("á", "a").replace("à", "a").replace("â", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ö", "o").replace("ú", "u").replace("û", "u").replace("?",""), "img": c["image_uri"] })
+            for face in faces:
+                filete = "{}/{}{}.full.jpg".format(setdir, face["name"], v)
+                try:
+                    with open(filete) as f:
+                        pass
+                except:
+                    req = requests.get(face["img"])
+                    with open(filete, "wb") as f:
+                        f.write(req.content)
+        else:
+            print("No hay imagen")
 
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")
     print("  1. Get editions")
     print("  2. Get cards")
+    print("  3. Get images")
     print("  0. Salir")
     return input("Opcion: ")
 
 options = {
     "1": process_sets,
-    "2": process_cards
+    "2": process_cards,
+    "3": download_images
 }
 if len(sys.argv) == 2:
     s = sys.argv[1]

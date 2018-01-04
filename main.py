@@ -1,5 +1,5 @@
 #menu
-from base import CK,MKM,Gatherer,Deckbox,ExchangeRate,Proxy
+from base import CK,MKM,Gatherer,ExchangeRate,Proxy
 import phppgadmin
 import sys
 from lxml import html
@@ -62,8 +62,7 @@ def finance_fromeutousa():
     precioparaenviocertificado = 25
     profittargetpct = 1.1
 
-    sql = "select s.name as set, c.name as card, ck.foil as foil, ck.price * {0} as ck, mkm_offers.price as mkm, mkm_offers.seller as seller, mkm_offers.available as available from ck_buylist ck left join scr_cards c on ck.id = c.idck left join scr_sets s on c.set = s.code inner join (select edition || '/' || card as id, foil, round(cast(((price * LEAST(available, 17)) + (select cost from mkm_shippingcosts sc where sc.from = itemlocation and sc.itemcount <= LEAST(available, 17) and tracked = price >= 25 order by itemcount desc limit 1)) / LEAST(available, 17) as numeric), 2) as price, LEAST(available, 17) as available, seller from mkm_cardprices) mkm_offers on mkm_offers.id = c.idmkm and mkm_offers.foil = ck.foil where mkm_offers.price < ck.price * {0}".format(usdtoeu - comisionporgastosdeenvio)
-    print(sql)
+    sql = "select s.name as set, c.name as card, ck.foil as foil, ck.price * {0} as ck, mkm_offers.price as mkm, mkm_offers.seller as seller, mkm_offers.available as available from ck_buylist ck left join scr_cards c on ck.id = c.idck left join scr_sets s on c.set = s.code inner join (select id, foil, round(cast(((price * LEAST(available, 17)) + (select cost from mkm_shippingcosts sc where sc.from = itemlocation and sc.itemcount <= LEAST(available, 17) and tracked = price >= 25 order by itemcount desc limit 1)) / LEAST(available, 17) as numeric), 2) as price, LEAST(available, 17) as available, seller from mkm_cardprices) mkm_offers on mkm_offers.id = c.idmkm and mkm_offers.foil = ck.foil where mkm_offers.price < ck.price * {0}".format(usdtoeu - comisionporgastosdeenvio)
     cards = phppgadmin.query(sql)
 
     with open("output/eutousa.csv", "w", newline='\n') as f:
@@ -94,7 +93,7 @@ def finance_fromusatoeu():
         writer = csv.DictWriter(f, fieldnames=["set", "name", "foil", "ck", "mkm", "available"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
     # TODO: DEFINIR LO QUE ES POTENTIAL ---> marcar cuando es un staple y etc.
-    sql = "select s.name as set, c.name as name, truefalse.value as foil, round(cast(ck.price * {} as numeric), 2) as ck, round(cast(mkm.price * {} as numeric), 2) as mkm, ck.available as available from scr_cards c CROSS JOIN truefalse left join scr_sets s on c.set = s.code left join ck_cardprices ck on c.idck = ck.card and truefalse.value = ck.foil left join mkm_cardpricesmin mkm on c.idmkm = mkm.edition || '/' || mkm.name and truefalse.value = mkm.foil where (not mkm.name is null and not ck.card is null) and not s.digital and ck.available > 0 and ck.condition = 'NM'".format(usdtoeu, 1 - comisionmkm - undercut)
+    sql = "select s.name as set, c.name as name, truefalse.value as foil, round(cast(ck.price * {} as numeric), 2) as ck, round(cast(mkm.price * {} as numeric), 2) as mkm, ck.available as available from scr_cards c CROSS JOIN truefalse left join scr_sets s on c.set = s.code left join ck_cardprices ck on c.idck = ck.card and truefalse.value = ck.foil left join mkm_cardpricesmin mkm on c.idmkm = mkm.id and truefalse.value = mkm.foil where (not mkm.name is null and not ck.card is null) and not s.digital and ck.available > 0 and ck.condition = 'NM'".format(usdtoeu, 1 - comisionmkm - undercut)
     cards = phppgadmin.query(sql)
     with open("output/usatoeu.csv", "a", newline='\n') as f:
         writer = csv.DictWriter(f, fieldnames=["set", "name", "foil", "ck", "mkm", "available"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -141,7 +140,7 @@ def finance_dondevendo():
     inventory = Deckbox.inventory(True)
     vender = []
     print("Inventario: {} cartas diferentes".format(len(inventory)))
-    sql = "select s.name as set, c.name as name, truefalse.value as foil, round(cast(ck.price * {} as numeric), 2) as ck, round(cast(mkm.price * {} as numeric), 2) as mkm from scr_cards c CROSS JOIN truefalse left join scr_sets s on c.set = s.code left join ck_buylist ck on c.idck = ck.card and truefalse.value = ck.foil left join mkm_cardpricesmin mkm on c.idmkm = mkm.edition || '/' || mkm.name and truefalse.value = mkm.foil where (not mkm.name is null and not ck.card is null) and not s.digital".format(usdtoeu, 1 - comisionmkm - undercut)
+    sql = "select s.name as set, c.name as name, truefalse.value as foil, round(cast(ck.price * {} as numeric), 2) as ck, round(cast(mkm.price * {} as numeric), 2) as mkm from scr_cards c CROSS JOIN truefalse left join scr_sets s on c.set = s.code left join ck_buylist ck on c.idck = ck.card and truefalse.value = ck.foil left join mkm_cardpricesmin mkm on c.idmkm = mkm.id and truefalse.value = mkm.foil where (not mkm.name is null and not ck.card is null) and not s.digital".format(usdtoeu, 1 - comisionmkm - undercut)
     allcards = phppgadmin.query(sql)
     son = {}
     noson = {}
