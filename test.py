@@ -1,5 +1,5 @@
 import deckbox, mkm, sys, utils
-import sqlite3
+import sqlite3, csv
 #
 # postear para vender las cosas que son de standard
 # standardsets = ["Kaladesh", "Aether Revolt", "Amonkhet", "Hour of Devastation", "Ixalan"]
@@ -26,27 +26,35 @@ import sqlite3
 # mkm.postStock(stock)
 
 #mkm.getAllPrices()
-cards = deckbox.getDeck(1887018)
-cardnames = []
-for card in cards:
-    cardnames.append("name LIKE '{}%'".format(card["name"].replace("'", "''")))
-cardnames = " OR ".join(cardnames)
-dbconn = sqlite3.connect("__offlinecache__/scryfall/scryfall.db")
-dbconn.row_factory = sqlite3.Row
-c = dbconn.cursor()
-dbcards = c.execute("SELECT * FROM cards WHERE {}".format(cardnames)).fetchall()
-for card in cards:
-    matches = []
-    for dbcard in dbcards:
-        if (dbcard["name"].startswith(card["name"])):
-            matches.append(dbcard)
-    print("{} {}".format(len(matches), card["name"]))
-    for m in matches:
-        if not m["idmkm"] is None:
-            qcard = {
-                "idmkm": m["idmkm"],
-                "isFoil": False,
-                "idLanguage": "EN"
-            }
-            mkm.getPriceData(qcard)
-            print(qcard["mkmprice"])
+# cards = deckbox.getDeck(1887018)
+# cardnames = []
+# for card in cards:
+#     cardnames.append("name LIKE '{}%'".format(card["name"].replace("'", "''")))
+# cardnames = " OR ".join(cardnames)
+# dbconn = sqlite3.connect("__offlinecache__/scryfall/scryfall.db")
+# dbconn.row_factory = sqlite3.Row
+# c = dbconn.cursor()
+# dbcards = c.execute("SELECT * FROM cards WHERE {}".format(cardnames)).fetchall()
+# for card in cards:
+#     matches = []
+#     for dbcard in dbcards:
+#         if (dbcard["name"].startswith(card["name"])):
+#             matches.append(dbcard)
+#     print("{} {}".format(len(matches), card["name"]))
+#     for m in matches:
+#         if not m["idmkm"] is None:
+#             qcard = {
+#                 "idmkm": m["idmkm"],
+#                 "isFoil": False,
+#                 "idLanguage": "EN"
+#             }
+#             mkm.getPriceData(qcard)
+#             print(qcard["mkmprice"])
+
+cards = deckbox.getInventory()
+
+with open("output/myinvprice.csv", "w", newline='\n') as f:
+    writer = csv.DictWriter(f, fieldnames=cards[0].keys(), delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writeheader()
+    for card in cards:
+        writer.writerow(card)

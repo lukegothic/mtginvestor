@@ -19,7 +19,7 @@ def create_db():
     c.execute('''CREATE TABLE IF NOT EXISTS sets
              (code text PRIMARY KEY, name text, set_type text, released_at text, block_code text, block text, parent_set_code text, card_count integer, digital integer, foil integer, icon_svg_uri text, search_uri text)''')
     c.execute('''CREATE TABLE IF NOT EXISTS cards
-             (id text PRIMARY KEY, name text, setcode text, idmkm text, idck text, reprint integer, image_uri text, collector_number integer, multiverse_id integer)''')
+             (id text PRIMARY KEY, name text, setcode text, idmkm text, idck text, color text, type text, usd real, eur real, reprint integer, image_uri text, collector_number integer, multiverse_id integer)''')
     dbconn.commit()
     dbconn.close()
 def process_sets():
@@ -38,7 +38,6 @@ def process_sets():
             f.write(data)
     sets = json.loads(data)
     setsinsert = []
-    sql = "INSERT INTO scr_sets(code,name,set_type,released_at,block_code,block,parent_set_code,card_count,digital,foil,icon_svg_uri,search_uri) VALUES"
     for set in sets["data"]:
         setsinsert.append(
             (
@@ -63,6 +62,8 @@ def process_sets():
     dbconn.commit()
     print("Insertados {} de {} sets".format(c.execute("SELECT count(*) as cnt FROM sets").fetchone()[0], len(setsinsert)))
     dbconn.close()
+def getCardColor(colors):
+    return "C" if len(colors) == 0 else ("M" if len(colors) > 1 else colors[0])
 def process_cards():
     #prompt para confirmar
     cachedir = "{}/cards".format(basedir)
@@ -88,28 +89,38 @@ def process_cards():
             idmkm = None if idmkm is None else idmkm.group(1)
             idck = re.match(reIDCK, card["purchase_uris"]["card_kingdom"])
             idck = None if idck is None else idck.group(1)
-            if (not "image_uris" in card):
-                image_uris = []
-                if ("card_faces" in card):
-                    for face in card["card_faces"]:
-                        image_uris.append(face["image_uris"]["normal"])
-                image_uris = ";".join(image_uris)
-            else:
-                image_uris = card["image_uris"]["normal"]
-            cardsinsert.append(
-                (
-                    card["id"],
-                    card["name"],
-                    card["set"],
-                    idmkm,
-                    idck,
-                    1 if card["reprint"] else 0,
-                    image_uris,
-                    card["collector_number"],
-                    card["multiverse_id"] if "multiverse_id" in card else None
+            # if (not "image_uris" in card):
+            #     image_uris = []
+            #     if ("card_faces" in card):
+            #         for face in card["card_faces"]:
+            #             image_uris.append(face["image_uris"]["normal"])
+            #     image_uris = ";".join(image_uris)
+            # else:
+            #     image_uris = card["image_uris"]["normal"]
+            try:
+                cardsinsert.append(
+                    (
+                        card["id"],
+                        card["name"].split(" // ")[0],
+                        card["set"],
+                        idmkm,
+                        idck,
+                        #getCardColor(card["colors"]) if "colors" in card else (";".join(getCardColor(f["colors"]) for f in card["card_faces"])),
+                        getCardColor(card["colors"]) if "colors" in card else getCardColor(card["card_faces"][0]["colors"]),
+                        #card["type_line"] if "type_line" in card else (";".join(f["type_line"] for f in card["card_faces"])),
+                        card["type_line"] if "type_line" in card else card["card_faces"][0]["type_line"],
+                        card["usd"] if "usd" in card else None,
+                        card["eur"] if "eur" in card else None,
+                        1 if card["reprint"] else 0,
+                        #card["image_uris"]["normal"] if "image_uris" in card else (";".join(f["image_uris"]["normal"] for f in card["card_faces"])),
+                        card["image_uris"]["normal"] if "image_uris" in card else card["card_faces"][0]["image_uris"]["normal"],
+                        card["collector_number"],
+                        card["multiverse_ids"][0] if "multiverse_ids" in card and len(card["multiverse_ids"]) > 0 else None
+                    )
                 )
-            )
-        #print("Pagina {}: {}".format(page, phppgadmin.execute(sql[:-1])))
+            except:
+                print("No insertado: " + card["name"])
+                #print("Pagina {}: {}".format(page, phppgadmin.execute(sql[:-1])))
         if (cards["has_more"]):
             page += 1
         else:
@@ -117,7 +128,7 @@ def process_cards():
     dbconn = sqlite3.connect(dbfile)
     c = dbconn.cursor()
     c.execute("DELETE FROM cards")
-    c.executemany('INSERT INTO cards VALUES (?,?,?,?,?,?,?,?,?)', cardsinsert)
+    c.executemany('INSERT INTO cards VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', cardsinsert)
     dbconn.commit()
     print("Insertadas {} de {} cartas".format(c.execute("SELECT count(*) as cnt FROM cards").fetchone()[0], len(cardsinsert)))
     dbconn.close()

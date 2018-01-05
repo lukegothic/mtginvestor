@@ -1,5 +1,6 @@
 import os, re, sys, csv, json, utils, requests, phppgadmin
 from PIL import Image
+import sqlite3
 cachedir = "__mycache__/deckbox"
 reID = "(\d*).jpg$"
 translator = {
@@ -67,13 +68,15 @@ def getInventory(force=False):
             # ignoramos las que no tienen set, pero mostramos un contador de cuantas no tienen
             if row["Edition"] != "":
                 cards.append({
-                    "id": id,
+                    "id": (int)(id),
                     "name": row["Name"],
                     "set": row["Edition"],
                     "count": (int)(row["Count"]),
                     "idLanguage": translator["language"][row["Language"]],
                     "isFoil": True if row["Foil"] == "foil" else False,
-                    "condition": translator["condition"][row["Condition"]]
+                    "condition": translator["condition"][row["Condition"]],
+                    "usd": None,
+                    "eur": None
                 })
                 if not id in multiverse_ids:
                     multiverse_ids.append(id)
@@ -82,73 +85,86 @@ def getInventory(force=False):
     print("OK ({} sin set)".format(withoutset))
     sys.stdout.write("Normalizando inventario por multiverse_id...")
     sys.stdout.flush()
-    basecards = phppgadmin.query("SELECT c.id as id, c.name as name, s.name as set, c.idmkm as idmkm, c.idck as idck, c.multiverse_id as multiverse_id FROM scr_cards c LEFT JOIN scr_sets s on c.set = s.code WHERE multiverse_id IN({})".format(",".join(multiverse_ids)))
+    print(len(multiverse_ids))
+    dbconn = sqlite3.connect("__offlinecache__/scryfall/scryfall.db")
+    dbconn.row_factory = sqlite3.Row
+    c = dbconn.cursor()
+    sql = "SELECT c.name as card, usd, eur, multiverse_id as id FROM cards c LEFT JOIN sets s on c.setcode = s.code WHERE multiverse_id IN({})".format(",".join(multiverse_ids))
+    dbcards = c.execute(sql).fetchall()
+    print(len(dbcards))
     for card in cards:
-        for basecard in basecards:
-            if card["id"] == basecard["multiverse_id"]:
-                card.update(basecard)
-                break;
-    print("OK ({} sin normalizar)".format(len(multiverse_ids) - len(basecards)))
-    # hacer algo con las que no encuentra
-    print("Normalizando inventario por set + name...")
-    #sys.stdout.flush()
-    sql = "with t(name,set) as (VALUES"
-    for card in cards:
-        if not isScryfallID(card["id"]):
-            sql += "('{}','{}'),".format(card["name"].replace("'","''"), card["set"].replace("'","''"))
-    sql = sql[:-1] + ") SELECT c.id as id, c.name as name, s.name as set, c.idmkm as idmkm, c.idck as idck, c.image_uri as image_uri FROM t LEFT JOIN scr_cards c ON c.name LIKE t.name||'%' LEFT JOIN scr_sets s on c.set = s.code ORDER BY t.name, s.name"
-    basecards = phppgadmin.query(sql)
-    # cargar las relaciones ya hechas
-    filete = "__offlinecache__/deckbox/idlinks.txt"
-    idlinks = {}
-    imagehelp = False
-    try:
-        with open(filete) as f:
-            lines = f.read().splitlines()
-        for line in lines:
-            ids = line.split(",")
-            idlinks[ids[0]] = ids[1]
-    except:
-        with open(filete, "w") as f:
-            pass
-    for card in cards:
-        if not isScryfallID(card["id"]):
-            candidates = []
-            for basecard in basecards:
-                if basecard["name"].startswith(card["name"]):
-                    candidates.append(basecard)
-            #print(":: {} [{}] ::".format(card["name"], card["set"]))
-            # buscamos coincidencia exacta o similar entre las opciones
-            for cand in candidates:
-                if cand["set"].startswith(card["set"]) or card["set"].startswith(cand["set"]) or (card["id"] in idlinks and idlinks[card["id"]] == cand["id"]):
-                    #print("AUTO: {}".format(cand["set"]))
-                    card.update(cand)
-                    break
-            # ofrecemos interfaz
-            if not isScryfallID(card["id"]):
-                if len(candidates) > 0:
-                    if imagehelp:
-                        image = Image.new("RGBA", (0, 0))
-                    for k, cand in list(enumerate(candidates)):
-                        print("{}. {}".format(k+1, cand["set"]))
-                        if imagehelp:
-                            image = utils.mergeImages(image, utils.addTextToImage(utils.resizeImageBy(utils.getImageFromURI(cand["image_uri"]), 40), "{}".format(k + 1)))
-                    if imagehelp:
-                        image.show()
-                sel = input("Opcion: ")
-                if (sel != ""):
-                    sel = candidates[(int)(sel)-1]
-                    with open(filete, "a") as f:
-                        f.write("{},{}\n".format(card["id"], sel["id"]))
-                    card.update(sel)
-                else:
-                    pass
-            #print()
-    # retirar las indomables..+***
-    total = len(cards)
-    for i, card in reversed(list(enumerate(cards))):
-        if not isScryfallID(card["id"]):
-            cards.pop(i)
-    print("Finalizado, {} indomables de {}".format(total - len(cards), total))
+        for dbcard in dbcards:
+            if card["id"] == dbcard["id"]:
+                card["usd"] = dbcard["usd"]
+                card["eur"] = dbcard["eur"]
+                break
+    # basecards = phppgadmin.query("SELECT c.id as id, c.name as name, s.name as set, c.idmkm as idmkm, c.idck as idck, c.multiverse_id as multiverse_id FROM scr_cards c LEFT JOIN scr_sets s on c.set = s.code WHERE multiverse_id IN({})".format(",".join(multiverse_ids)))
+    # for card in cards:
+    #     for basecard in basecards:
+    #         if card["id"] == basecard["multiverse_id"]:
+    #             card.update(basecard)
+    #             break;
+    # print("OK ({} sin normalizar)".format(len(multiverse_ids) - len(basecards)))
+    # # hacer algo con las que no encuentra
+    # print("Normalizando inventario por set + name...")
+    # #sys.stdout.flush()
+    # sql = "with t(name,set) as (VALUES"
+    # for card in cards:
+    #     if not isScryfallID(card["id"]):
+    #         sql += "('{}','{}'),".format(card["name"].replace("'","''"), card["set"].replace("'","''"))
+    # sql = sql[:-1] + ") SELECT c.id as id, c.name as name, s.name as set, c.idmkm as idmkm, c.idck as idck, c.image_uri as image_uri FROM t LEFT JOIN scr_cards c ON c.name LIKE t.name||'%' LEFT JOIN scr_sets s on c.set = s.code ORDER BY t.name, s.name"
+    # basecards = phppgadmin.query(sql)
+    # # cargar las relaciones ya hechas
+    # filete = "__offlinecache__/deckbox/idlinks.txt"
+    # idlinks = {}
+    # imagehelp = False
+    # try:
+    #     with open(filete) as f:
+    #         lines = f.read().splitlines()
+    #     for line in lines:
+    #         ids = line.split(",")
+    #         idlinks[ids[0]] = ids[1]
+    # except:
+    #     with open(filete, "w") as f:
+    #         pass
+    # for card in cards:
+    #     if not isScryfallID(card["id"]):
+    #         candidates = []
+    #         for basecard in basecards:
+    #             if basecard["name"].startswith(card["name"]):
+    #                 candidates.append(basecard)
+    #         #print(":: {} [{}] ::".format(card["name"], card["set"]))
+    #         # buscamos coincidencia exacta o similar entre las opciones
+    #         for cand in candidates:
+    #             if cand["set"].startswith(card["set"]) or card["set"].startswith(cand["set"]) or (card["id"] in idlinks and idlinks[card["id"]] == cand["id"]):
+    #                 #print("AUTO: {}".format(cand["set"]))
+    #                 card.update(cand)
+    #                 break
+    #         # ofrecemos interfaz
+    #         if not isScryfallID(card["id"]):
+    #             if len(candidates) > 0:
+    #                 if imagehelp:
+    #                     image = Image.new("RGBA", (0, 0))
+    #                 for k, cand in list(enumerate(candidates)):
+    #                     print("{}. {}".format(k+1, cand["set"]))
+    #                     if imagehelp:
+    #                         image = utils.mergeImages(image, utils.addTextToImage(utils.resizeImageBy(utils.getImageFromURI(cand["image_uri"]), 40), "{}".format(k + 1)))
+    #                 if imagehelp:
+    #                     image.show()
+    #             sel = input("Opcion: ")
+    #             if (sel != ""):
+    #                 sel = candidates[(int)(sel)-1]
+    #                 with open(filete, "a") as f:
+    #                     f.write("{},{}\n".format(card["id"], sel["id"]))
+    #                 card.update(sel)
+    #             else:
+    #                 pass
+    #         #print()
+    # # retirar las indomables..+***
+    # total = len(cards)
+    # for i, card in reversed(list(enumerate(cards))):
+    #     if not isScryfallID(card["id"]):
+    #         cards.pop(i)
+    # print("Finalizado, {} indomables de {}".format(total - len(cards), total))
 
     return cards
