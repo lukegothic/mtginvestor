@@ -110,32 +110,45 @@ def doSearch():
 def getMinEuroPrice(cards):
 	cardnames = []
 	for card in cards:
-	    cardnames.append("name LIKE '{}%'".format(card.replace("'", "''")))
+	    cardnames.append("c.name = '{0}' OR c.name LIKE '{0} //%'".format(card.replace("'", "''")))
 	cardnames = " OR ".join(cardnames)
 	dbconn = sqlite3.connect("__offlinecache__/scryfall/scryfall.db")
 	dbconn.row_factory = sqlite3.Row
 	c = dbconn.cursor()
-	dbcards = c.execute("SELECT * FROM cards WHERE {}".format(cardnames)).fetchall()
+	sql = "select c.name, c.setcode, c.idmkm from sets s left join cards c on s.code = c.setcode WHERE ({}) AND set_type IN ('expansion', 'core') ORDER BY released_at".format(cardnames)
+	with open("sql.txt", "w") as f:
+		f.write(sql)
+	dbcards = c.execute(sql).fetchall()
+	with open("proxy.txt", "w") as f:
+		lasted = None
+		for dbcard in dbcards:
+			if lasted != dbcard["setcode"]:
+				lasted = dbcard["setcode"]
+				for i in range(2):
+					f.write("Mountain\n")
+			if not dbcard["name"] in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
+				f.write(dbcard["name"] + "\n")
 	priceobj = {}
 	for card in cards:
-		minprice = 10000
-		matches = []
-		for dbcard in dbcards:
-			if (dbcard["name"].startswith(card)):
-				matches.append(dbcard)
-		print("{} ({} versiones)".format(card, len(matches)))
-		for m in matches:
-			if not m["idmkm"] is None:
-				qcard = {
-					"idmkm": m["idmkm"],
-					"isFoil": False,
-					"idLanguage": "EN"
-				}
-				mkm.getPriceData(qcard)
-				if qcard["mkmprice"] < minprice:
-					minprice = qcard["mkmprice"]
-		priceobj[card] = minprice
-		print("Min: {}".format(priceobj[card]))
+		if not card in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
+			minprice = 10000
+			matches = []
+			for dbcard in dbcards:
+				if (dbcard["name"].startswith(card)):
+					matches.append(dbcard)
+			print("{} ({} versiones)".format(card, len(matches)))
+			for m in matches:
+				if not m["idmkm"] is None:
+					qcard = {
+						"idmkm": m["idmkm"],
+						"isFoil": False,
+						"idLanguage": "EN"
+					}
+					mkm.getPriceDataSingle(qcard)
+					if qcard["mkmprice"] < minprice:
+						minprice = qcard["mkmprice"]
+			priceobj[card] = minprice
+			print("Min: {}".format(priceobj[card]))
 	return priceobj
 
 #start = time.perf_counter()
@@ -253,7 +266,11 @@ finalobj = []
 for card in paupercards:
 	c = { "card": card, "used": 0 }
 	if True:
-		c["price_E"] = "{}".format(pricedata_eu[card]).replace(".", ",") if not card in ["Plains", "Island", "Swamp", "Mountain", "Forest"] else 0
+		#if card == "Plains" or card == "Island" or card == "Swamp" or card == "Mountain" or card == "Forest":
+		if card in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
+			c["price_E"] = 0
+		else:
+			c["price_E"] = "{}".format(pricedata_eu[card]).replace(".", ",")
 	for arch in archetypes:
 		if arch["name"] in paupercards[card]:
 			c[arch["name"]] = "{:.0%}".format(paupercards[card][arch["name"]] / len(arch["decks"]))

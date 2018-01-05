@@ -109,7 +109,7 @@ def getPriceData_DB(card, queue):
     else:
         queue.put(card)
     sys.stdout.write("Download progress: %d   \r" % (queue.qsize()) )
-def getPriceData(card):
+def getPriceDataSingle(card):
     if (not card["idmkm"] is None):
         baseurl = "https://www.cardmarket.com/en/Magic"
         basedir = "__mycache__/mkm/prices"
