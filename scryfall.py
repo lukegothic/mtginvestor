@@ -141,6 +141,14 @@ def getcardprices(cards):
     dbcards = dbcards.fetchall()
     dbconn.close()
     return dbcards
+def getcards(cards):
+    dbconn = sqlite3.connect(dbfile)
+    dbconn.row_factory = sqlite3.Row
+    c = dbconn.cursor()
+    dbcards = c.execute("SELECT c.name as name, c.setcode as setcode FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE c.name IN ('{}') ORDER BY s.released_at".format("','".join(cards)))
+    dbcards = dbcards.fetchall()
+    dbconn.close()
+    return dbcards
 def download_images():
     picsdir = "{}/pics".format(basedir)
     if (not os.path.exists(picsdir)):
@@ -208,7 +216,12 @@ def pricedecklist():
                 total += cp["price"] * deck[c]
                 break;
     print("{}e".format(total))
-
+def cardsbyedition():
+    deck = decklist.readdeckfromfile()
+    cards = getcards(c.replace("'", "''") for c in deck)
+    for c in cards:
+        if not c["name"] in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
+            print("[{}] {}".format(c["setcode"], c["name"]))
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")
@@ -216,6 +229,7 @@ def menu():
     print("  2. Get cards")
     print("  3. Get images")
     print("  4. Price deck")
+    print("  5. Todas las ediciones de una lista de cartas")
     print("  0. Salir")
     return input("Opcion: ")
 
@@ -224,7 +238,8 @@ options = {
     "1": process_sets,
     "2": process_cards,
     "3": download_images,
-    "4": pricedecklist
+    "4": pricedecklist,
+    "5": cardsbyedition
 }
 if len(sys.argv) == 2:
     s = sys.argv[1]
