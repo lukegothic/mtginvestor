@@ -3,6 +3,7 @@ import re
 import sys
 import json
 import requests
+import decklist
 #import phppgadmin
 import sqlite3
 
@@ -132,7 +133,14 @@ def process_cards():
     dbconn.commit()
     print("Insertadas {} de {} cartas".format(c.execute("SELECT count(*) as cnt FROM cards").fetchone()[0], len(cardsinsert)))
     dbconn.close()
-
+def getcardprices(cards):
+    dbconn = sqlite3.connect(dbfile)
+    dbconn.row_factory = sqlite3.Row
+    c = dbconn.cursor()
+    dbcards = c.execute("SELECT name,min(eur) as price FROM cards WHERE name IN ('{}') GROUP BY name".format("','".join(cards)))
+    dbcards = dbcards.fetchall()
+    dbconn.close()
+    return dbcards
 def download_images():
     picsdir = "{}/pics".format(basedir)
     if (not os.path.exists(picsdir)):
@@ -190,6 +198,16 @@ def download_images():
                         f.write(req.content)
         else:
             print("No hay imagen")
+def pricedecklist():
+    deck = decklist.readdeckfromfile()
+    prices = getcardprices(c.replace("'", "''") for c in deck)
+    total = 0
+    for c in deck:
+        for cp in prices:
+            if c == cp["name"]:
+                total += cp["price"] * deck[c]
+                break;
+    print("{}e".format(total))
 
 def menu():
     os.system('cls')
@@ -197,6 +215,7 @@ def menu():
     print("  1. Get editions")
     print("  2. Get cards")
     print("  3. Get images")
+    print("  4. Price deck")
     print("  0. Salir")
     return input("Opcion: ")
 
@@ -204,7 +223,8 @@ create_db()
 options = {
     "1": process_sets,
     "2": process_cards,
-    "3": download_images
+    "3": download_images,
+    "4": pricedecklist
 }
 if len(sys.argv) == 2:
     s = sys.argv[1]

@@ -38,6 +38,9 @@ archetypes = [ {
 }, {
 	"name": "Affinity",
 	"cards": ["Frogmite", "Myr Enforcer"]
+}, {
+	"name": "Acid Trip", # a veces solape con las teirras de tron
+	"cards": ["Reality Acid"]
 },{
 	"name": "Tron",
 	"cards": ["Urza's Tower"]
@@ -85,7 +88,7 @@ archetypes = [ {
 	"cards": ["Pestilence", "Guardian of the Guildpact"]
 }, {
 	"name": "MonoW",
-	"cards": ["Squadron Hawk"]
+	"cards": ["Squadron Hawk"] # revisar nuevas listas que no traen squadron hawk: llevan bs, soul sisters, thraben inspector
 }, {
 	"name": "Goblins",
 	"cards": ["Goblin Bushwhacker"]
