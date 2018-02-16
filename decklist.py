@@ -1,7 +1,7 @@
 import re
 import tkinter as tk
 from tkinter import filedialog
-reCard = "(\d*) (.*)"
+reCard = "(\d*).(.*)"
 def readdeckfromfile():
     root = tk.Tk()
     root.withdraw()
@@ -10,7 +10,7 @@ def readdeckfromfile():
         data = f.readlines()
     cards = {}
     for d in data:
-        m = re.match(reCard, d)
+        m = re.match(reCard, d.strip())
         if not m is None:
             quantity = (int)(m.group(1))
             card = m.group(2)

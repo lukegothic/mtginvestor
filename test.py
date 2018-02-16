@@ -1,5 +1,8 @@
 import deckbox, mkm, sys, utils
+import decklist
 import sqlite3, csv
+
+
 #
 # postear para vender las cosas que son de standard
 # standardsets = ["Kaladesh", "Aether Revolt", "Amonkhet", "Hour of Devastation", "Ixalan"]
@@ -51,10 +54,10 @@ import sqlite3, csv
 #             mkm.getPriceData(qcard)
 #             print(qcard["mkmprice"])
 
-cards = deckbox.getInventory()
-
-with open("output/myinvprice.csv", "w", newline='\n') as f:
-    writer = csv.DictWriter(f, fieldnames=cards[0].keys(), delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writeheader()
-    for card in cards:
-        writer.writerow(card)
+# cards = deckbox.getInventory()
+#
+# with open("output/myinvprice.csv", "w", newline='\n') as f:
+#     writer = csv.DictWriter(f, fieldnames=cards[0].keys(), delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+#     writer.writeheader()
+#     for card in cards:
+#         writer.writerow(card)

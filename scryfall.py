@@ -1,11 +1,5 @@
-import os
-import re
-import sys
-import json
-import requests
-import decklist
-#import phppgadmin
-import sqlite3
+import os, re, sys, json, requests, decklist, sqlite3, csv, webbrowser
+import utils
 
 basedir = "__mycache__/scryfall"
 if (not os.path.exists(basedir)):
@@ -27,7 +21,6 @@ def process_sets():
     cachedir = "{}/sets".format(basedir)
     if (not os.path.exists(cachedir)):
         os.makedirs(cachedir)
-    #phppgadmin.execute("DELETE FROM scr_sets")
     filete = "{}/sets.json".format(cachedir)
     try:
         with open(filete) as f:
@@ -143,9 +136,10 @@ def getcardprices(cards):
     return dbcards
 def getcards(cards):
     dbconn = sqlite3.connect(dbfile)
-    dbconn.row_factory = sqlite3.Row
+    #dbconn.row_factory = sqlite3.Row
+    dbconn.row_factory = utils.dict_factory
     c = dbconn.cursor()
-    dbcards = c.execute("SELECT c.name as name, c.setcode as setcode FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE c.name IN ('{}') ORDER BY s.released_at".format("','".join(cards)))
+    dbcards = c.execute("SELECT c.id, c.name, c.setcode, c.color, c.type, c.eur, c.image_uri, c.collector_number, s.name as setname, s.icon_svg_uri as seticon, s.released_at as setreleasedate FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE s.digital = 0 AND c.name IN ('{}') ORDER BY s.released_at".format("','".join(cards)))
     dbcards = dbcards.fetchall()
     dbconn.close()
     return dbcards
@@ -219,9 +213,14 @@ def pricedecklist():
 def cardsbyedition():
     deck = decklist.readdeckfromfile()
     cards = getcards(c.replace("'", "''") for c in deck)
-    for c in cards:
-        if not c["name"] in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
-            print("[{}] {}".format(c["setcode"], c["name"]))
+    utils.showCardsInViewer(cards)
+    # fields = ["set", "name"]
+    # with open("output.csv", "w", newline='\n') as f:
+    #     writer = csv.DictWriter(f, fields, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    #     writer.writeheader()
+    #     for card in cards:
+    #         if not card["name"] in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
+    #             writer.writerow({"set": card["set"], "name": card["name"]});
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")

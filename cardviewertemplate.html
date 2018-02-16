@@ -1,0 +1,105 @@
+<html>
+<head>
+  <title>Viewing MTG cards</title>
+</head>
+<style>
+  html, body {{
+    margin:0;
+    padding:0;
+  }}
+  img.seticon {{
+    width:18px;
+    height:18px;
+    vertical-align: middle;
+    margin-right: 2px;
+  }}
+  #scalercontainer {{
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 100%;
+    background-color: #ffffff;
+  }}
+  #cardlist {{
+    margin-top: 25px;
+  }}
+  .hidden {{
+    display: none;
+  }}
+  .cardtemplate {{
+    /*
+    height: 680px;
+    width: 488px;
+    */
+    height: 68px;
+    width: 48px;
+    position: relative;
+  }}
+  .cardname {{
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 14px;
+    font-color: #fff;
+  }}
+  .whiteblack {{
+    font-color: #fff;
+    text-shadow: 2px 2px 1px #000,-2px -2px 1px #000,-2px 2px 1px #000,2px -2px 1px #000;
+  }}
+</style>
+<script>
+  var imagekey = "image_uri";
+  var setkey = "setname";
+  var iconkey = "seticon";
+  var basics = ["Plains", "Island", "Swamp", "Mountain", "Forest"];
+  var None = null;
+  var cards = {cards};
+  function rescaleImages() {{
+    for (var i = 0; i < images.length; i++) {{
+      images[i].width = scaler.value;
+    }}
+  }}
+</script>
+<body>
+  <div id="scalercontainer"><input id="scaler" type="range" value="100" min="0" max="488"></div>
+  <div id="cardlist"></div>
+  <div class="cardtemplate hidden">
+    <img class="cardimage" />
+    <span class="cardname"></span>
+    <span class="cardprice whiteblack"></span>
+  </div>
+  <script>
+    var scaler = document.getElementById("scaler");
+    scaler.addEventListener("input", rescaleImages);
+    scaler.addEventListener("change", rescaleImages);
+    var cardlist = document.getElementById("cardlist");
+    var cardtemplate = document.getElementsByClassName("cardtemplate")[0];
+    var images = [];
+    var lastset = null;
+    for (var c = 0, card = cards[c]; c < cards.length; card = cards[++c]) {{
+      if (basics.indexOf(card["name"]) == -1) {{
+        if (lastset != card[setkey]) {{
+          lastset = card[setkey];
+          var h3 = document.createElement("h3");
+          var img = document.createElement("img");
+          img.src = card[iconkey];
+          img.className = "seticon";
+          h3.appendChild(img);
+          var span = document.createElement("span");
+          span.innerHTML = card[setkey];
+          h3.appendChild(span);
+          cardlist.appendChild(h3);
+        }}
+        var newcard = cardtemplate.cloneNode(true);
+        newcard.getElementsByClassName("cardimage")[0].src = cards[c][imagekey];
+        newcard.getElementsByClassName("cardname")[0].innerHTML = cards[c]["name"];
+        newcard.getElementsByClassName("cardprice")[0].innerHTML = cards[c]["eur"];
+        newcard.classList.remove("hidden");
+        cardlist.appendChild(newcard);
+        images.push(newcard);
+      }}
+    }}
+  </script>
+</body>
+</html>
