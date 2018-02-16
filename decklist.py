@@ -1,7 +1,7 @@
 import re
 import tkinter as tk
 from tkinter import filedialog
-reCard = "(\d*).(.*)"
+reCard = "(\d+).{1}(.*)"
 def readdeckfromfile():
     root = tk.Tk()
     root.withdraw()
@@ -18,5 +18,3 @@ def readdeckfromfile():
                 cards[card] = 0
             cards[card] += quantity
     return cards
-def readdeckfromcontents():
-    pass
