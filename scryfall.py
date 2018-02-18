@@ -130,16 +130,16 @@ def getcardprices(cards):
     dbconn = sqlite3.connect(dbfile)
     dbconn.row_factory = sqlite3.Row
     c = dbconn.cursor()
-    dbcards = c.execute("SELECT name,min(eur) as price FROM cards WHERE name IN ('{}') GROUP BY name".format("','".join(cards)))
+    sql = "SELECT name,min(eur) as price FROM cards WHERE LOWER(name) IN ('{}') GROUP BY name".format("','".join(cards).lower())
+    dbcards = c.execute(sql)
     dbcards = dbcards.fetchall()
     dbconn.close()
     return dbcards
 def getcards(cards):
     dbconn = sqlite3.connect(dbfile)
-    #dbconn.row_factory = sqlite3.Row
     dbconn.row_factory = utils.dict_factory
     c = dbconn.cursor()
-    dbcards = c.execute("SELECT c.id, c.name, c.setcode, c.color, c.type, c.eur, c.image_uri, c.collector_number, s.name as setname, s.icon_svg_uri as seticon, s.released_at as setreleasedate FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE s.digital = 0 AND c.name IN ('{}') ORDER BY s.released_at".format("','".join(cards)))
+    dbcards = c.execute("SELECT c.id, c.name, c.setcode, c.color, c.type, c.eur, c.image_uri, c.collector_number, s.name as setname, s.icon_svg_uri as seticon, s.released_at as setreleasedate FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE s.digital = 0 AND LOWER(c.name) IN ('{}') ORDER BY s.released_at".format("','".join(cards).lower()))
     dbcards = dbcards.fetchall()
     dbconn.close()
     return dbcards
@@ -206,7 +206,7 @@ def pricedecklist():
     total = 0
     for c in deck:
         for cp in prices:
-            if c == cp["name"]:
+            if c.lower() == cp["name"].lower():
                 total += cp["price"] * deck[c]
                 break;
     print("{}e".format(total))
