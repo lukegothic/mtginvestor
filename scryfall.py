@@ -204,23 +204,22 @@ def pricedecklist():
     deck = decklist.readdeckfromfile()
     prices = getcardprices(c.replace("'", "''") for c in deck)
     total = 0
-    for c in deck:
-        for cp in prices:
-            if c.lower() == cp["name"].lower():
-                total += cp["price"] * deck[c]
-                break;
-    print("{}e".format(total))
+    with open("prices.csv", "w") as f:
+        for card in deck:
+            quantity = deck[card]
+            for cp in prices:
+                cardnameprice = cp["name"]
+                cardprice = cp["price"]
+                if card.lower() == cardnameprice.lower():
+                    cardtotal = cardprice * quantity
+                    f.write("{};{};{:.2f};{:.2f}\n".format(quantity, card, cardprice, cardtotal))
+                    total += cardtotal
+                    break;
+    print("Total = {:.2f} Euros".format(total))
 def cardsbyedition():
     deck = decklist.readdeckfromfile()
     cards = getcards(c.replace("'", "''") for c in deck)
     utils.showCardsInViewer(cards)
-    # fields = ["set", "name"]
-    # with open("output.csv", "w", newline='\n') as f:
-    #     writer = csv.DictWriter(f, fields, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    #     writer.writeheader()
-    #     for card in cards:
-    #         if not card["name"] in ["Plains", "Island", "Swamp", "Mountain", "Forest"]:
-    #             writer.writerow({"set": card["set"], "name": card["name"]});
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")

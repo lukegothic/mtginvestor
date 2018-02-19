@@ -9,12 +9,13 @@ def dict_factory(cursor, row):
     return d
 # muestra cartas en visor html
 def showCardsInViewer(cards):
+    op = "cardviewer"
     if (len(cards) > 0):
-        with open("cardviewertemplate.html") as f:
+        with open("templates/{}.html".format(op)) as f:
             template = f.read()
-        with open(os.path.abspath("cardviewer.html"), "w", encoding="utf8") as f:
+        with open(os.path.abspath("{}.html".format(op)), "w", encoding="utf8") as f:
             f.write(template.format(cards = cards))
-        webbrowser.open(os.path.abspath("cardviewer.html"))
+        webbrowser.open(os.path.abspath("{}.html".format(op)))
     else:
         print("No cards found")
 def getImageFromURI(uri):
