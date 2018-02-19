@@ -292,12 +292,15 @@ def getItemPrices(stock):
     for stockitem in stock:
         q.put(stockitem)
     q.join()
-def deleteStock(stock):
+def deleteStock(stock=None):
+    if stock is None:
+        stock = mkm.stock_management.get_stock().json()["article"]
     if len(stock) > 0:
         articles = []
         for stockitem in stock:
             articles.append({ "idArticle": stockitem["idArticle"], "count": stockitem["count"] })
         mkm.stock_management.delete_stock( data = { "article": articles } )
+
 def postStock(stock):
     # ESTA MOVIDA ERA PARA OBTENER TODOS LOS PRECIOS DE MIS CARTAS
     # q = Queue()
