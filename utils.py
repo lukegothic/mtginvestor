@@ -1,4 +1,4 @@
-import requests
+import requests, time
 import os, webbrowser
 from PIL import Image, ImageDraw, ImageFont
 # para usarlo con sqlite3, devuelve consultas en plan dict python
@@ -8,16 +8,19 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 # muestra cartas en visor html
-def showCardsInViewer(cards):
-    op = "cardviewer"
+def showCardsInViewer(cards, op="cardviewer"):
     if (len(cards) > 0):
         with open("templates/{}.html".format(op)) as f:
             template = f.read()
-        with open(os.path.abspath("{}.html".format(op)), "w", encoding="utf8") as f:
-            f.write(template.format(cards = cards))
-        webbrowser.open(os.path.abspath("{}.html".format(op)))
+        tmphtml = os.path.abspath("tmp_{}.html".format(time.time()))
+        with open(tmphtml, "w", encoding="utf8") as f:
+            if (op == "cardviewer"):
+                f.write(template.format(cards = cards))
+            elif (op == "cardviewer_tappedout"):
+                f.write(template.format(cards = "\n".join("1 {}".format(c["name"]) for c in cards)))
+        webbrowser.open(tmphtml)
     else:
-        print("No cards found")
+        print("no cards found")
 def getImageFromURI(uri):
     r = requests.get(uri, stream=True)
     image = Image.open(r.raw)

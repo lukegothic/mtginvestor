@@ -2,6 +2,9 @@ import os, re, sys, json, requests, decklist, sqlite3, csv, webbrowser
 import utils
 import deckbox
 
+import tkinter as tk
+from tkinter import filedialog
+
 basedir = "__mycache__/scryfall"
 if (not os.path.exists(basedir)):
     os.makedirs(basedir)
@@ -15,7 +18,7 @@ def create_db():
     c.execute('''CREATE TABLE IF NOT EXISTS sets
              (code text PRIMARY KEY, name text, set_type text, released_at text, block_code text, block text, parent_set_code text, card_count integer, digital integer, foil integer, icon_svg_uri text, search_uri text)''')
     c.execute('''CREATE TABLE IF NOT EXISTS cards
-             (id text PRIMARY KEY, name text, setcode text, idmkm text, idck text, color text, type text, usd real, eur real, reprint integer, image_uri text, collector_number integer, multiverse_id integer, modernlegal integer)''')
+             (id text, mtgo_id integer, name text, setcode text, idmkm text, idck text, color text, type text, usd real, eur real, tix real, reprint integer, image_uri text, collector_number integer, multiverse_id integer, modernlegal integer)''')
     dbconn.commit()
     dbconn.close()
 def updatedb(softupdate=True):
@@ -104,6 +107,7 @@ def process_cards(softupdate):
                 cardsinsert.append(
                     (
                         card["id"],
+                        card["mtgo_id"] if "mtgo_id" in card else None,
                         card["name"].split(" // ")[0],
                         card["set"],
                         idmkm,
@@ -114,6 +118,7 @@ def process_cards(softupdate):
                         card["type_line"] if "type_line" in card else card["card_faces"][0]["type_line"],
                         card["usd"] if "usd" in card else None,
                         card["eur"] if "eur" in card else None,
+                        card["tix"] if "tix" in card else None,
                         1 if card["reprint"] else 0,
                         #card["image_uris"]["normal"] if "image_uris" in card else (";".join(f["image_uris"]["normal"] for f in card["card_faces"])),
                         card["image_uris"]["normal"] if "image_uris" in card else card["card_faces"][0]["image_uris"]["normal"],
@@ -132,7 +137,7 @@ def process_cards(softupdate):
     dbconn = sqlite3.connect(dbfile)
     c = dbconn.cursor()
     c.execute("DELETE FROM cards")
-    c.executemany('INSERT INTO cards VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', cardsinsert)
+    c.executemany('INSERT INTO cards VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', cardsinsert)
     dbconn.commit()
     print("Insertadas {} de {} cartas".format(c.execute("SELECT count(*) as cnt FROM cards").fetchone()[0], len(cardsinsert)))
     dbconn.close()
@@ -235,13 +240,13 @@ def vendiblesmodern():
     dbconn = sqlite3.connect(dbfile)
     dbconn.row_factory = utils.dict_factory
     c = dbconn.cursor()
-    dbcards = c.execute("SELECT c.name, s.name as setname, eur, multiverse_id as id FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE modernlegal = 1 AND eur >= 10 ORDER BY s.released_at").fetchall()
+    dbcards = c.execute("SELECT c.name, s.name as setname, usd, multiverse_id as id FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE modernlegal = 1 AND usd >= 10 ORDER BY s.released_at").fetchall()
     dbconn.close()
     vendibles = []
     for card in inventory:
         for dbcard in dbcards:
             if card["id"] == dbcard["id"] or (card["name"].lower() == dbcard["name"].lower() and card["set"].lower() == dbcard["setname"].lower()):
-                card["price"] = dbcard["eur"]
+                card["price"] = dbcard["usd"]
                 vendibles.append(card)
                 break
     for card in vendibles:
@@ -254,6 +259,34 @@ def preciosusavseu():
     dbconn.close()
     for card in dbcards:
         print(card)
+def cardsbymtgoid(mtgoids):
+    dbconn = sqlite3.connect(dbfile)
+    dbconn.row_factory = utils.dict_factory
+    c = dbconn.cursor()
+    dbcards = c.execute("SELECT c.mtgo_id, c.name, s.name as setname, tix FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE c.mtgo_id IN ({}) ORDER BY s.released_at".format(mtgoids)).fetchall()
+    dbconn.close()
+    return dbcards
+def inversionmtgo():
+    root = tk.Tk()
+    root.withdraw()
+    filepath = filedialog.askopenfilename()
+    with open(filepath) as f:
+        data = f.readlines()
+    cards = {}
+    for d in data:
+        dat = d.replace("\n", "").split(";")
+        cards[dat[0]] = { "name": None, "set": None, "buy": (float)(dat[3]), "current": None, "min": None, "max": None }
+    dbcards = cardsbymtgoid(",".join(c for c in cards))
+    print(cards)
+    for card in dbcards:
+        id = str(card["mtgo_id"])
+        cards[id]["name"] = card["name"]
+        cards[id]["set"] = card["setname"]
+        cards[id]["current"] = card["tix"]
+    with open("7_inversion.csv", "w") as f:
+        for c in cards:
+            f.write("{};{};{};{};{}\n".format(c, cards[c]["name"], cards[c]["set"], cards[c]["buy"], cards[c]["current"]));
+
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")
@@ -263,6 +296,7 @@ def menu():
     print("  4. Todas las ediciones de una lista de cartas")
     print("  5. Vendibles modern")
     print("  6. Precios USA vs EU")
+    print("  7. Inversiones MTGO")
     print("  0. Salir")
     return input("Opcion: ")
 
@@ -273,7 +307,8 @@ options = {
     "3": pricedecklist,
     "4": cardsbyedition,
     "5": vendiblesmodern,
-    "6": preciosusavseu
+    "6": preciosusavseu,
+    "7": inversionmtgo
 }
 if len(sys.argv) == 2:
     s = sys.argv[1]
@@ -281,7 +316,7 @@ if len(sys.argv) == 2:
 else:
     while True:
         opt = menu()
-        if (opt == "0"):
+        if (opt == "0" or opt == ""):
             break
         os.system('cls')
         options[opt]()
