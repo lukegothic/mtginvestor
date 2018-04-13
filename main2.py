@@ -5,6 +5,8 @@ import deckbox
 import tkinter as tk
 from tkinter import filedialog
 
+import xml.etree.ElementTree as ET
+
 basedir = "__mycache__/scryfall"
 if (not os.path.exists(basedir)):
     os.makedirs(basedir)
@@ -286,7 +288,40 @@ def inversionmtgo():
     with open("7_inversion.csv", "w") as f:
         for c in cards:
             f.write("{};{};{};{};{}\n".format(c, cards[c]["name"], cards[c]["set"], cards[c]["buy"], cards[c]["current"]));
-
+def valoramtgo():
+    root = tk.Tk()
+    root.withdraw()
+    filepath = filedialog.askopenfilename()
+    tree = ET.parse(filepath)
+    t = tree.getroot()
+    cards = {}
+    total = 0
+    for card in t.iter("Cards"):
+        cards[(int)(card.attrib["CatID"])] = { "Quantity": (int)(card.attrib["Quantity"]), "Name": card.attrib["Name"] }
+    # primera pasada, no sabemos si son normales o foil, consultamos todas
+    dbcards = cardsbymtgoid(",".join(str(c) for c in cards))
+    for card in dbcards:
+        id = card["mtgo_id"]
+        cards[id]["tix"] = card["tix"]
+    # segunda pasada, consultamos las foils con downgrade a normal
+    cards2 = {}
+    for card in cards:
+        if not "tix" in cards[card]:
+            newid = card - 1
+            cards2[newid] = { "Quantity": cards[card]["Quantity"], "Name": cards[card]["Name"] }
+        else:
+            total = total + (cards[card]["tix"] * cards[card]["Quantity"])
+    dbcards = cardsbymtgoid(",".join(str(c) for c in cards2))
+    for card in dbcards:
+        id = card["mtgo_id"]
+        cards2[id]["tix"] = card["tix"]
+    # tercera pasada, output de las cartas kk
+    for card in cards2:
+        if not "tix" in cards2[card] or cards2[card]["tix"] is None:
+            print(card + 1, cards2[card])
+        else:
+            total = total + (cards2[card]["tix"] * cards2[card]["Quantity"])
+    print("Total", total)
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")
@@ -297,6 +332,7 @@ def menu():
     print("  5. Vendibles modern")
     print("  6. Precios USA vs EU")
     print("  7. Inversiones MTGO")
+    print("  8. Valora MTGO")
     print("  0. Salir")
     return input("Opcion: ")
 
@@ -308,7 +344,8 @@ options = {
     "4": cardsbyedition,
     "5": vendiblesmodern,
     "6": preciosusavseu,
-    "7": inversionmtgo
+    "7": inversionmtgo,
+    "8": valoramtgo
 }
 if len(sys.argv) == 2:
     s = sys.argv[1]
