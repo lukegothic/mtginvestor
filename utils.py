@@ -1,6 +1,6 @@
 import requests, time
 import os, webbrowser
-from PIL import Image, ImageDraw, ImageFont
+#from PIL import Image, ImageDraw, ImageFont
 # para usarlo con sqlite3, devuelve consultas en plan dict python
 def dict_factory(cursor, row):
     d = {}
