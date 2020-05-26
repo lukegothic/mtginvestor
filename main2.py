@@ -217,6 +217,34 @@ def getcards(cards):
     dbcards = dbcards.fetchall()
     dbconn.close()
     return dbcards
+def getcardsjson(card_list):
+    cards_by_set = {}
+    with open("data/default-cards-20200526060425.json", 'r', encoding="utf8") as json_file:
+        data = json.load(json_file)
+    for card in card_list:
+        kounter = 0
+        thecard = None
+        name = card.lower()
+        for d in data:
+            if (name == d["name"].lower()):
+                kounter += 1
+                thecard = d
+            else:
+                if ("card_faces" in d and name == d["card_faces"][0]["name"].lower()):
+                    kounter += 1
+                    thecard = d["card_faces"][0]
+            if thecard != None:
+                if not d["set"] in cards_by_set:
+                    cards_by_set[d["set"]] = []
+                cards_by_set[d["set"]].append({
+                    "name": thecard["name"],
+                    "image_uri": thecard["image_uris"]["border_crop"],
+                    "price": d["prices"]["eur"]
+                })
+                break
+        if kounter == 0:
+            print(card)
+    return cards_by_set
 def pricedecklist():
     deck = decklist.readdeckfromfile()
     prices = getcardprices(c.replace("'", "''") for c in deck)
@@ -235,7 +263,8 @@ def pricedecklist():
     print("Total = {:.2f} Euros".format(total))
 def cardsbyedition():
     deck = decklist.readdeckfromfile()
-    cards = getcards(c.replace("'", "''") for c in deck)
+    cards = getcardsjson(deck)
+    #cards = getcards(c.replace("'", "''") for c in deck)
     utils.showCardsInViewer(cards)
 def vendiblesmodern():
     inventory = deckbox.getInventory()

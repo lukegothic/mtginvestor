@@ -4,6 +4,7 @@ from tkinter import filedialog
 reCard = "(\d+).{1}(.*)"
 def readdeckfromfile():
     root = tk.Tk()
+    root.wm_attributes('-topmost', True)
     root.withdraw()
     filepath = filedialog.askopenfilename()
     with open(filepath) as f:
