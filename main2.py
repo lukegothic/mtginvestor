@@ -217,15 +217,18 @@ def getcards(cards):
     dbcards = dbcards.fetchall()
     dbconn.close()
     return dbcards
-def getcardsjson(card_list):
+#getcardsbyset
+#getcards
+#params/filtros: lista cartas o criterio
+def getcardsbysetfromjson(card_list):
     cards_by_set = {}
     with open("data/default-cards-20200526060425.json", 'r', encoding="utf8") as json_file:
         data = json.load(json_file)
     for card in card_list:
         kounter = 0
-        thecard = None
         name = card.lower()
         for d in data:
+            thecard = None
             if (name == d["name"].lower()):
                 kounter += 1
                 thecard = d
@@ -241,9 +244,22 @@ def getcardsjson(card_list):
                     "image_uri": thecard["image_uris"]["border_crop"],
                     "price": d["prices"]["eur"]
                 })
-                break
         if kounter == 0:
             print(card)
+    return cards_by_set
+def getcardsbysetfromjson_vendibles():
+    cards_by_set = {}
+    with open("data/default-cards-20200526060425.json", 'r', encoding="utf8") as json_file:
+        data = json.load(json_file)
+        for d in data:
+            if "legalities" in d and d["legalities"]["modern"] == "legal" and "prices" in d and "eur" in d["prices"] and not d["prices"]["eur"] is None and (float)(d["prices"]["eur"]) >= 5:
+                if not d["set"] in cards_by_set:
+                    cards_by_set[d["set"]] = []
+                cards_by_set[d["set"]].append({
+                    "name": d["name"],
+                    "image_uri": (d["card_faces"][0]["image_uris"]["border_crop"] if "image_uris" in d["card_faces"][0] else None) if "card_faces" in d else d["image_uris"]["border_crop"],
+                    "price": d["prices"]["eur"]
+                })
     return cards_by_set
 def pricedecklist():
     deck = decklist.readdeckfromfile()
@@ -259,12 +275,15 @@ def pricedecklist():
                     cardtotal = cardprice * quantity
                     f.write("{};{};{:.2f};{:.2f}\n".format(quantity, card, cardprice, cardtotal))
                     total += cardtotal
-                    break;
+                    break
     print("Total = {:.2f} Euros".format(total))
 def cardsbyedition():
     deck = decklist.readdeckfromfile()
-    cards = getcardsjson(deck)
+    cards = getcardsbysetfromjson(deck)
     #cards = getcards(c.replace("'", "''") for c in deck)
+    utils.showCardsInViewer(cards)
+def vendiblesmodern_todo():
+    cards = getcardsbysetfromjson_vendibles()
     utils.showCardsInViewer(cards)
 def vendiblesmodern():
     inventory = deckbox.getInventory()
