@@ -29,7 +29,7 @@ def isScryfallID(id):
 def getExportedData(deckid):
     if not os.path.exists(cachedir):
         os.makedirs(cachedir)
-    filename = "{}/{}.csv".format(cachedir, deckid);
+    filename = "{}/{}.csv".format(cachedir, deckid)
     # guardar en disco si es necesario
     # borrar si ha pasado 1h
     if not os.path.exists(filename):
@@ -96,4 +96,29 @@ def getInventory(force=False):
     #             card["usd"] = dbcard["usd"]
     #             card["eur"] = dbcard["eur"]
     #             break
+    return cards
+def getInventoryRaw(force=False):
+    multiverse_id_regex = r"(\d*).jpg$"
+    filename = getExportedData("125700")
+    cards = []
+    with open(filename) as f:
+        reader = csv.DictReader(f, delimiter=",", quotechar='"')
+        for row in reader:
+            # asumir que habra una clase "card" que se instancia con propiedades...
+            # tambien asumir que hay otra clase "inventorycard" que anade count, condition, language, isFoil
+            # en este caso es una inventory card que tiene como propiedad count
+            cards.append({
+                # aqui las propiedades base
+                "multiverse_id": (int)(re.search(multiverse_id_regex, row["Image URL"]).group(1)),
+                "name": row["Name"],
+                "set": None,
+                "set_name": row["Edition"],
+                "collector_number": (int)(row["Card Number"]) if row["Card Number"] != "" else None,
+                # aqui las propiedades de inv
+                "count": (int)(row["Count"]),
+                "condition": row["Condition"],
+                "language": row["Language"],
+                "isFoil": True if row["Foil"] == "foil" else False,
+                
+            })
     return cards
