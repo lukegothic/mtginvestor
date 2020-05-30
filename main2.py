@@ -252,10 +252,11 @@ def getcardsbysetfromjson_vendibles():
     with open("data/default-cards-20200526060425.json", 'r', encoding="utf8") as json_file:
         data = json.load(json_file)
         for d in data:
-            if "legalities" in d and d["legalities"]["modern"] == "legal" and "prices" in d and "eur" in d["prices"] and not d["prices"]["eur"] is None and (float)(d["prices"]["eur"]) >= 5:
+            if "legalities" in d and d["legalities"]["modern"] == "legal" and "prices" in d and "eur" in d["prices"] and not d["prices"]["eur"] is None and (float)(d["prices"]["eur"]) >= 0.5 and (float)(d["prices"]["eur"]) <= 5:
                 if not d["set"] in cards_by_set:
                     cards_by_set[d["set"]] = []
                 cards_by_set[d["set"]].append({
+                    "number": d["collector_number"] if "collector_number" in d else None,
                     "name": d["name"],
                     "image_uri": (d["card_faces"][0]["image_uris"]["border_crop"] if "image_uris" in d["card_faces"][0] else None) if "card_faces" in d else d["image_uris"]["border_crop"],
                     "price": d["prices"]["eur"]
@@ -282,10 +283,10 @@ def cardsbyedition():
     cards = getcardsbysetfromjson(deck)
     #cards = getcards(c.replace("'", "''") for c in deck)
     utils.showCardsInViewer(cards)
-def vendiblesmodern_todo():
+def vendiblesmodern():
     cards = getcardsbysetfromjson_vendibles()
     utils.showCardsInViewer(cards)
-def vendiblesmodern():
+def vendiblesmodern_antiguodesdeBD():
     inventory = deckbox.getInventory()
     dbconn = sqlite3.connect(dbfile)
     dbconn.row_factory = utils.dict_factory

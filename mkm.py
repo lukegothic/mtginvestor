@@ -1,4 +1,4 @@
-from mkmsdk.mkm import mkm
+from mkmsdk.mkm import Mkm
 from lxml import html
 from queue import Queue
 import os, re, sys, csv, time, json, requests, phppgadmin
@@ -19,7 +19,7 @@ def getMasterData():
     sys.stdout.flush()
     filete = basedir + "/sets.json"
     try:
-        resp = mkm.market_place.expansion(game=1)
+        resp = Mkm.market_place.expansion(game=1)
         with open(filete, "w") as f:
             f.write(resp.text)
         sets = resp.json()
@@ -40,7 +40,7 @@ def getMasterData():
             with open(filete) as f:
                 cards = json.loads(f.read())
         except:
-            resp = mkm.market_place.expansion_singles(game=1, name=set["name"])
+            resp = Mkm.market_place.expansion_singles(game=1, name=set["name"])
             with open(filete, "w") as f:
                 f.write(resp.text)
             cards = resp.json()
@@ -294,12 +294,12 @@ def getItemPrices(stock):
     q.join()
 def deleteStock(stock=None):
     if stock is None:
-        stock = mkm.stock_management.get_stock().json()["article"]
+        stock = Mkm.stock_management.get_stock().json()["article"]
     if len(stock) > 0:
         articles = []
         for stockitem in stock:
             articles.append({ "idArticle": stockitem["idArticle"], "count": stockitem["count"] })
-        mkm.stock_management.delete_stock( data = { "article": articles } )
+        Mkm.stock_management.delete_stock( data = { "article": articles } )
 
 def postStock(stock):
     # ESTA MOVIDA ERA PARA OBTENER TODOS LOS PRECIOS DE MIS CARTAS
@@ -325,7 +325,7 @@ def postStock(stock):
     #         print("NOLINK", card["name"], card["set"])
     # print(sum, num)
     #
-    currentstock = mkm.stock_management.get_stock().json()["article"]
+    currentstock = Mkm.stock_management.get_stock().json()["article"]
     isUpdate = False
     if stock is None:
         # TODO: esto no funciona, dado que me he cargado el idarticle del postablearticle
@@ -348,8 +348,8 @@ def postStock(stock):
     sys.stdout.write("Updating stock...")
     sys.stdout.flush()
     if isUpdate:
-        mkm.stock_management.put_stock(data = { "article": articles })
+        Mkm.stock_management.put_stock(data = { "article": articles })
     else:
         deleteStock(currentstock)
-        mkm.stock_management.post_stock(data = { "article": articles })
+        Mkm.stock_management.post_stock(data = { "article": articles })
     sys.stdout.write("OK\n")

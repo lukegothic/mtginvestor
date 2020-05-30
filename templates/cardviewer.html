@@ -82,7 +82,7 @@
   <div id="scalercontainer"><input id="scaler" type="range" value="100" min="0" max="488"></div>
   <div id="cardlist"></div>
   <div class="cardtemplate hidden">
-    <img class="cardimage" />
+    <img class="cardimage" loading="lazy" />
     <div class="cardname whiteblack"></div>
     <div class="cardprice whiteblack"></div>
   </div>
@@ -96,6 +96,9 @@
     sets.forEach(function(set) {{
       setcards = cards[set.code];
       if (setcards && setcards.length > 0) {{
+        setcards.sort(function(a, b) {{
+          return parseInt(a.number) - parseInt(b.number);
+        }});
         var h3 = document.createElement("h3");
         var img = document.createElement("img");
         img.src = set.icon_svg_uri;
@@ -108,6 +111,7 @@
         setcards = cards[set.code];
         setcards.forEach(function(c) {{
           var newcard = cardtemplate.cloneNode(true);
+          newcard.loading = "lazy";
           newcard.getElementsByClassName("cardimage")[0].src = c[imagekey];
           newcard.getElementsByClassName("cardname")[0].innerHTML = c["name"];
           newcard.getElementsByClassName("cardprice")[0].innerHTML = c["price"];
