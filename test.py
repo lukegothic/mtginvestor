@@ -1,7 +1,12 @@
 import deckbox, mkm, sys, utils
 import decklist
 import sqlite3, csv
+import json
 
+mycards = deckbox.getInventory()
+#print(mycards)
+with open("data/ckm/sets.json", "r", encoding="utf8") as f:
+    ckm_sets = json.load(f)["expansion"]
 
 #
 # postear para vender las cosas que son de standard

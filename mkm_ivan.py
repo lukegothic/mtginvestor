@@ -2,6 +2,8 @@ from mkmsdk.mkm import Mkm
 from mkmsdk.api_map import _API_MAP
 import time
 from pprint import pprint
+import base64
+
 
 def postableArticle(p):
     return {
@@ -20,6 +22,17 @@ forceupdate = False
 articles = None
 # 1. obtener stock    
 mkm = Mkm(_API_MAP["2.0"]["api"], _API_MAP["2.0"]["api_root"])
+
+# obtener cartas del marketplace
+# pl = mkm.market_place.product_list()
+# with open("ckm.zip", "wb") as f:
+#     pfile = pl.json()["productsfile"]
+#     bdecoded = base64.b64decode(pfile)
+#     f.write(bdecoded)
+
+# obtener expansiones
+#pl = mkm.market_place.expansions(game=1)
+
 products = mkm.stock_management.get_stock().json()
 time.sleep(1)
 products = products["article"]
