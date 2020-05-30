@@ -1,5 +1,5 @@
 import os, re, sys, csv, json, utils, requests, phppgadmin
-from PIL import Image
+#from PIL import Image
 import sqlite3
 cachedir = "__mycache__/deckbox"
 reID = "(\d*).jpg$"
@@ -35,7 +35,7 @@ def getExportedData(deckid):
     if not os.path.exists(filename):
         req = requests.get("https://deckbox.org/sets/export/{}?format=csv&f=&s=&o=&columns=Image%20URL".format(deckid))
         with open(filename, "w") as f:
-            f.write(req.text);
+            f.write(req.text)
     sys.stdout.write("OK")
     print("")
     return filename

@@ -81,21 +81,23 @@ def process_cards(softupdate):
     reIDCK = "https:\/\/www\.cardkingdom\.com\/catalog\/item\/(\d*)?\?"
     page = 1
     cardsinsert = []
+    jsoncards = []
     while True:
         filete = "{}/{}.json".format(cachedir, page)
         try:
             with open(filete, encoding="utf-8") as f:
                 data = f.read()
         except:
-            req = requests.get("https://api.scryfall.com/cards?page={}".format(page))
+            req = requests.get("https://api.scryfall.com/cards/search?q=lang%3Aen&page={}".format(page))
             data = req.text
             with open(filete, "w", encoding="utf-8") as f:
                 f.write(data)
         cards = json.loads(data)
+        jsoncards.append(re.search("\[(.*)\]", data).group(1))
         for card in cards["data"]:
-            idmkm = re.match(reIDMKM, card["purchase_uris"]["magiccardmarket"])
+            idmkm = re.match(reIDMKM, card["purchase_uris"]["cardmarket"])
             idmkm = None if idmkm is None else idmkm.group(1)
-            idck = re.match(reIDCK, card["purchase_uris"]["card_kingdom"])
+            idck = re.match(reIDCK, card["purchase_uris"]["card_kingdom"]) if "card_kingdom" in card["purchase_uris"] else None
             idck = None if idck is None else idck.group(1)
             # if (not "image_uris" in card):
             #     image_uris = []
@@ -143,6 +145,9 @@ def process_cards(softupdate):
     dbconn.commit()
     print("Insertadas {} de {} cartas".format(c.execute("SELECT count(*) as cnt FROM cards").fetchone()[0], len(cardsinsert)))
     dbconn.close()
+    # jsondb
+    with open("{}/scryfall.json".format(dbdir), "w", encoding="utf-8") as f:
+        f.write("[{}]".format(",".join(jsoncards)))
 def download_images():
     picsdir = "{}/pics".format(basedir)
     if (not os.path.exists(picsdir)):
@@ -288,20 +293,10 @@ def vendiblesmodern():
     utils.showCardsInViewer(cards)
 def vendiblesmodern_antiguodesdeBD():
     inventory = deckbox.getInventory()
-    dbconn = sqlite3.connect(dbfile)
-    dbconn.row_factory = utils.dict_factory
-    c = dbconn.cursor()
-    dbcards = c.execute("SELECT c.name, s.name as setname, usd, multiverse_id as id FROM cards c LEFT JOIN sets s ON c.setcode = s.code WHERE modernlegal = 1 AND usd >= 10 ORDER BY s.released_at").fetchall()
-    dbconn.close()
-    vendibles = []
-    for card in inventory:
-        for dbcard in dbcards:
-            if card["id"] == dbcard["id"] or (card["name"].lower() == dbcard["name"].lower() and card["set"].lower() == dbcard["setname"].lower()):
-                card["price"] = dbcard["usd"]
-                vendibles.append(card)
-                break
-    for card in vendibles:
-        print("{}x {} [{}] {}".format(card["count"], card["name"], card["set"], card["price"]))
+    inventory_ids = [c["id"] for c in inventory]
+    modern_caras_tengo = [c for c in modern_caras if (c["multiverse_ids"][0] if len(c["multiverse_ids"]) > 0 else 0) in inventory_ids]
+    for c in modern_caras_tengo:
+        print("{}\t{}\t{}".format(c["name"], c["set_name"], c["prices"]["usd"] if not c["prices"]["usd"] is None else c["prices"]["usd_foil"]))
 def preciosusavseu():
     dbconn = sqlite3.connect(dbfile)
     dbconn.row_factory = utils.dict_factory
@@ -371,6 +366,14 @@ def valoramtgo():
         else:
             total = total + (cards2[card]["tix"] * cards2[card]["Quantity"])
     print("Total", total)
+def readjsondb():
+    with open("{}/scryfall.json".format(dbdir), "r", encoding="utf-8") as f:
+        a = json.loads(f.read())
+    return a
+def readjsondb_online():
+    req = requests.get("https://archive.scryfall.com/json/scryfall-default-cards.json")
+    data = json.loads(req.text)
+    print(len(data))
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")
