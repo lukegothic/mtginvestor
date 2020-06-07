@@ -119,6 +119,5 @@ def getInventoryRaw(force=False):
                 "condition": row["Condition"],
                 "language": row["Language"],
                 "isFoil": True if row["Foil"] == "foil" else False,
-                
             })
     return cards

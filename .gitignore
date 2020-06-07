@@ -100,3 +100,5 @@ ENV/
 __mycache__/
 data
 backup
+tmp_*.html
+cardviewer_mkm_index.html

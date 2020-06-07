@@ -1,0 +1,120 @@
+<html>
+<head>
+  <title>Viewing MTG cards</title>
+  <link rel="stylesheet" href="https://andrewgioia.github.io/Keyrune/node_modules/keyrune/css/keyrune.min.css">
+  <link rel="stylesheet" href="flags.css">
+</head>
+<style>
+  html, body {{
+    margin:0;
+    padding:0;
+    font-family: fantasy;
+  }}
+  img.seticon {{
+    width:18px;
+    height:18px;
+    vertical-align: middle;
+    margin-right: 2px;
+  }}
+  #scalercontainer {{
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 100%;
+    background-color: #ffffff;
+    z-index: 10000;
+  }}
+  h3 {{
+    font-weight: normal;
+  }}
+  #cardlist {{
+    margin-top: 25px;
+  }}
+  .hidden {{
+    display: none !important;
+  }}
+  .cardtemplate {{
+    height: 204px;
+    width: 147px;
+    position: relative;
+    display: inline-block;
+  }}
+  .cardimage {{
+    height: 204px;
+    width: 147px;
+  }}
+  .cardname {{
+    position: absolute;
+    top: 6px;
+    left: 9px;
+    font-size: 14px;
+    width: 100%;
+  }}
+  .cardprice {{
+    position: absolute;
+    bottom: 6px;
+    right:9px;
+    text-align: right;
+    font-size: 20px;
+    width: 100%;
+  }}
+  .whiteblack {{
+    color: #fff;
+    text-shadow: 0px 0px 3px #000,0px 0px 3px #000,0px 0px 3px #000,0px 0px 3px #000;
+  }}
+</style>
+<script>
+  var imagekey = "image";
+  var basics = ["Plains", "Island", "Swamp", "Mountain", "Forest"];
+  var None = null;
+  var True = true;
+  var False = false;
+  var cards = {cards};
+  function rescaleImages() {{
+    for (var i = 0; i < images.length; i++) {{
+      images[i].width = scaler.value;
+    }}
+  }}
+</script>
+<body>
+  <div id="scalercontainer"><input id="scaler" type="range" value="100" min="0" max="488"></div>
+  <div id="cardlist"></div>
+  <div class="cardtemplate hidden">
+    <img class="cardimage" loading="lazy" />
+    <div class="cardname whiteblack"></div>
+    <div class="cardprice whiteblack"></div>
+  </div>
+  <script>
+    var scaler = document.getElementById("scaler");
+    scaler.addEventListener("input", rescaleImages);
+    scaler.addEventListener("change", rescaleImages);
+    var cardlist = document.getElementById("cardlist");
+    var cardtemplate = document.getElementsByClassName("cardtemplate")[0];
+    var images = [];
+    cards.sort(function(a, b) {{
+      return a.number - b.number;
+    }});
+    cards.forEach(function(c) {{
+      var newcard = cardtemplate.cloneNode(true);
+      newcard.getElementsByClassName("cardimage")[0].src = "https://" + c[imagekey];
+      var cname = newcard.getElementsByClassName("cardname")[0];
+      var flag = document.createElement("i");
+      flag.className = "flag flag-" + c["language"]["idLanguage"];
+      cname.appendChild(flag);
+      var n = document.createElement("span");
+      n.innerHTML = c["name"];
+      cname.appendChild(n);
+      if (c.isFoil) {{
+        var foilImg = document.createElement("i");
+        foilImg.className="ss ss-past";
+        cname.appendChild(foilImg);
+      }}
+      newcard.getElementsByClassName("cardprice")[0].innerHTML = "x" + c["count"];
+      newcard.classList.remove("hidden");
+      cardlist.appendChild(newcard);
+      images.push(newcard);
+    }});
+  </script>
+</body>
+</html>

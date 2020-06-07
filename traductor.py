@@ -97,25 +97,25 @@ def traduceitem(item):
         "condition": translationtable["condition"][item["condition"]]  if item["condition"] in translationtable["condition"] else "NM",
         "isFoil": item["isFoil"],
         "isSigned": False,
-        "isPlayset": False
+        "isPlayset": False,
+        "isAltered": False
     }
     # pasada 2: encontrar producto con propiedades del objeto
     # 2.1 edicion
     set_name = translationtable["set"][item["set_name"]] if item["set_name"] in translationtable["set"] else item["set_name"] # TODO: cambiar esto para escupir el item["set"]
-    set_id = None
-
     if not set_name is None:
         for s in mkm_sets:
             if set_name == s["enName"]:
-                set_id = s["idExpansion"]
+                # le ponemos el set al producto... poco ortodoxo dado que no se usa para manejar stock pero mejor guardarlo ahora para futura referencia
+                translateditem["idExpansion"] = s["idExpansion"]
                 break
     # 2.2 product (usando name y idExpansion)
-    if not set_id is None:
+    if "idExpansion" in translateditem:
         item_name = item["name"].lower()
         for c in mkm_cards:
             card_name = c["name"].lower()
             if item_name == card_name or card_name.startswith(item_name):
-                if set_id == c["set"]:
+                if translateditem["idExpansion"] == c["set"]:
                     translateditem["idProduct"] = c["idProduct"]
                     break
     return translateditem
