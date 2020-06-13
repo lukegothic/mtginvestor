@@ -102,3 +102,4 @@ data
 backup
 tmp_*.html
 cardviewer_mkm_index.html
+__offlinecache__/

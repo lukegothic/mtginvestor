@@ -1,0 +1,234 @@
+<html>
+<head>
+  <title>Viewing MTG cards</title>
+  <link rel="stylesheet" href="https://andrewgioia.github.io/Keyrune/node_modules/keyrune/css/keyrune.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="flags.css">
+</head>
+<style>
+  html, body {{
+    margin:0;
+    padding:0;
+    font-family: "Open Sans";
+  }}
+  img.seticon {{
+    width:18px;
+    height:18px;
+    vertical-align: middle;
+    margin-right: 2px;
+  }}
+  #scalercontainer {{
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 100%;
+    background-color: #ffffff;
+    z-index: 10000;
+  }}
+  .header {{
+    font-family: "Roboto";
+    font-size: 16px;
+  }}
+  .hidden {{
+    display: none !important;
+  }}
+  .address {{
+      border: 3px dashed #999999;
+      background-color: #dddddd;
+      padding: 10px;
+      width: 250px;
+  }}
+  .address.burbuja {{
+      background-color: #ffcc99;
+      border-color: #cc9966;
+  }}
+  .expIcon {{
+    display: inline-block;
+    width: 21px;
+    height: 21px;
+    background-image: url('https//static.cardmarket.com/img/c0b7f2a47c1ca8d14ce75c8079507fc9/expansionicons/expicons.png');
+  }}
+  .card {{
+    display:inline-block;
+    position:relative;
+    margin:2px;
+    width:120px;
+    box-sizing: border-box;
+  }}
+  .card.perfect {{
+      border: 2px solid grey;
+  }}
+  .card .name {{
+    position:absolute;
+    z-index:-1;
+    color:#fff;
+  }}
+  .card .count {{
+    position:absolute;
+    bottom:5px;
+    right:5px;
+    z-index:3;
+  }}
+  
+  @keyframes animatedFoil {{
+    0% {{ background-position:0% 0% }}
+    50% {{ background-position:100% 100% }}
+    100% {{ background-position:0% 0% }}
+  }}
+  
+  .card .foil {{
+    position:absolute;
+    top:0;
+    left:0;
+    background: linear-gradient(143deg, rgba(255,0,0,0.4), rgba(231,0,255,0.4), rgba(17,0,255,0.4), rgba(0,255,255,0.4), rgba(35,255,0,0.4), rgba(255,255,0,0.4), rgba(255,0,0,0.4));
+    background-size: 150% 150%;
+    background-position: 0px 0px;
+    height:170px;
+    width:120px;
+    animation: animatedFoil 2s ease-in-out infinite;
+  }}
+
+</style>
+<script>
+  var None = null;
+  var True = true;
+  var False = false;
+  var orders = {cards};
+  orders.reverse();
+  function rescaleImages() {{
+    for (var i = 0; i < images.length; i++) {{
+      images[i].width = scaler.value;
+    }}
+  }}
+  var countries = {{
+    "D": "Germany",
+    "ES": "Espa&ntilde;a",
+    "IT": "Italy",
+    "FI": "Finland",
+    "GB": "United Kingdom"
+  }};
+</script>
+<body>
+    <div class="card template hidden">
+        <div class="foil hidden"></div>
+        <img class="image" width="120" loading="lazy" />
+        <div class="name whiteblack"></div>
+        <div class="count whiteblack"></div>
+    </div>
+    <div class="shipment template hidden">
+        <div class="header"><span>Order #</span><strong class="orderid"></strong></div>
+        <div class="alist">
+
+        </div>
+        <div class="total"><span>Art&iacute;culos </span><strong class="narticulos"></strong> - <span>Precio </span><strong class="precio"></strong></div>
+        <div class="address">
+            <div class="name"></div>
+            <div class="street"></div>
+            <div class="extra hidden"></div>
+            <div><span class="zip"></span> <span class="city"></span></div>
+            <div class="country"></div>
+        </div>
+        <hr>
+    </div>
+    <!--
+    <div id="scalercontainer">
+        <input id="scaler" type="range" value="100" min="0" max="488">
+    </div>
+    -->
+    <div id="searchcards" class="hidden">
+
+    </div>
+    <div id="packagecards">
+
+    </div>
+  <script>
+    /*
+    var scaler = document.getElementById("scaler");
+    scaler.addEventListener("input", rescaleImages);
+    scaler.addEventListener("change", rescaleImages);
+    var cardlist = document.getElementById("cardlist");
+    var cardtemplate = document.getElementsByClassName("cardtemplate")[0];
+    var images = [];
+    cards.sort(function(a, b) {{
+      return a.number - b.number;
+    }});
+    cards.forEach(function(c) {{
+      var newcard = cardtemplate.cloneNode(true);
+      newcard.getElementsByClassName("cardimage")[0].src = "https://" + c[imagekey];
+      var cname = newcard.getElementsByClassName("cardname")[0];
+      var flag = document.createElement("i");
+      flag.className = "flag flag-" + c["language"]["idLanguage"];
+      cname.appendChild(flag);
+      var n = document.createElement("span");
+      n.innerHTML = c["name"];
+      cname.appendChild(n);
+      if (c.isFoil) {{
+        var foilImg = document.createElement("i");
+        foilImg.className="ss ss-past";
+        cname.appendChild(foilImg);
+      }}
+      newcard.getElementsByClassName("cardprice")[0].innerHTML = "x" + c["count"];
+      newcard.classList.remove("hidden");
+      cardlist.appendChild(newcard);
+      images.push(newcard);
+    }});
+    */
+    var c = document.querySelector(".card.template");
+    var cardtemplate = c.cloneNode(true);
+    cardtemplate.classList.remove("hidden");
+    c.parentNode.removeChild(c);
+
+
+    var t = document.querySelector(".shipment.template");
+    var shipmenttemplate = t.cloneNode(true);
+    shipmenttemplate.classList.remove("hidden");
+    t.parentNode.removeChild(t);
+    var slist = document.getElementById("packagecards");
+    orders.forEach(function(o) {{
+        var n = shipmenttemplate.cloneNode(true);
+        // header
+        n.querySelector(".orderid").innerHTML = o.idOrder;
+        n.querySelector(".total .narticulos").innerHTML = o.articleCount;
+        n.querySelector(".total .precio").innerHTML = o.articleValue;
+        if (o.articleValue >= 15) {{
+            n.querySelector(".address").classList.add("burbuja");
+        }}
+        // article list
+        var alist = n.querySelector(".alist");
+        o.article.forEach(function(a) {{
+            /*
+            var s = `${{a.product.expansion}} ${{a.count}}x ${{a.product.locName}}${{a.isFoil ? " *FOIL* " : ""}}${{a.comments.indexOf("Perfect") != -1 ? " [PERFECT SIZE] " : ""}}`;
+            var l = document.createElement("li");
+            l.innerHTML = s;
+            alist.appendChild(l);
+            */
+            for (var i = 0; i < a.count; i++) {{
+                var n = cardtemplate.cloneNode(true);
+                n.querySelector(".image").src = "https:" + a.product.image;
+                if (a.isFoil) {{
+                    n.querySelector(".foil").classList.remove("hidden");
+                }}
+                if (a.price >= 3) {{
+                    n.classList.add("perfect");
+                }}
+                alist.appendChild(n);
+            }}
+        }});
+        // address
+        n.querySelector(".address .name").innerHTML = o.shippingAddress.name;
+        n.querySelector(".address .street").innerHTML = o.shippingAddress.street;
+        if (o.shippingAddress.extra) {{
+            var xtra = n.querySelector(".address .extra");
+            xtra.innerHTML = o.shippingAddress.extra;
+            xtra.classList.remove("hidden");
+        }}
+        n.querySelector(".address .zip").innerHTML = o.shippingAddress.zip;
+        n.querySelector(".address .city").innerHTML = o.shippingAddress.city;
+        n.querySelector(".address .country").innerHTML = countries[o.shippingAddress.country];
+        // add
+        slist.appendChild(n);
+    }});
+  </script>
+</body>
+</html>

@@ -85,7 +85,7 @@ def actualizarprecios(products):
                         pindex = 0
                         while p["isPlayset"]:
                             pindex += 1
-                        p["price"] = max(articles[pindex]["price"] * 0.995, 0.25)
+                        p["price"] = max(articles[pindex]["price"] * 0.995, 0.25 if articles[pindex]["language"]["idLanguage"] == 1 else 0.20)
                         if p["price"] >= 15:
                             comment = "[ Perfect Size and Bubble Envelope ]"
                         elif p["price"] >= 3:
@@ -218,5 +218,166 @@ def misterioainterrogante():
     #products = getstock()
     #pmkm = mkm.market_place.expansion_singles(expansion=s["idExpansion"]).json()
     pass
+def asWishListItem(item, action):
+    i = {
+        "count": item["count"],
+        "wishPrice": item["wishPrice"],
+        "minCondition": item["minCondition"],
+        "mailAlert": item["mailAlert"],
+        "idLanguage": item["idLanguage"],
+        "isFoil": item["isFoil"],
+        "isSigned": item["isSigned"],
+        "isAltered": item["isAltered"],
+    }
+    if action == "editItem" and "idWant" in item:
+        i["idWant"] = item["idWant"]
+    elif action == "addItem":
+        k = "idMetaproduct" if item["type"] == "metaproduct" else "idProduct"
+        i[k] = item[k]
+    return i
+def copywantlist(originalWantListId, destinationListName):
+    lists = mkm.wants_list.get_wants_list().json()
+    listid = None
+    for l in lists["wantslist"]:
+        if l["name"] == destinationListName:
+            listid = l["idWantslist"]
+            break
+    if listid is None:
+        r = mkm.wants_list.create_wants_list(data = { "wantslist": [{ "name": destinationListName, "idGame": 1 }]}).json()
+        listid = r["wantslist"][0]["idWantslist"]
+    wants = mkm.wants_list.get_wants_list_items(wants=originalWantListId).json()
+    wants = wants["wantslist"]["item"]
+    action = "addItem"
+    inserted = mkm.wants_list.edit_wants_list(wants=listid, data={
+        "action": action,
+        "metaproduct": [asWishListItem(w, action) for w in wants if "idMetaproduct" in w],
+        "product": [asWishListItem(w, action) for w in wants if "idProduct" in w]
+    }).json()
+def wantlistitems_oldie(wantlistId):
+    pass
+def wantlistitems_foil(wantlistId):
+    wants = mkm.wants_list.get_wants_list_items(wants=wantlistId).json()
+    wants = wants["wantslist"]["item"]
+    item = wants[0]
+    action = "editItem"
+    inserted = mkm.wants_list.edit_wants_list(wants=wantlistId, data={
+        "action": action,
+        #"want": [{"idWant" : w["idWant"], "isFoil": "true"} for w in wants]
+        "want": [{"idWant": item["idWant"], "condition": "EX"}]
+    }).json()
+    pass
+#crear una copia de una lista y realizar una modificacion
+# foil: True/False
+# condition: NM/EX...
+# set: meta/old
+def modifywantlist(wantlistId, foil=None, condition=None, setito=None, language=None):
+    lists = mkm.wants_list.get_wants_list().json()
+    wantlistName = None
+    backupListId = None
+    for l in lists["wantslist"]:
+        if l["idWantslist"] == wantlistId:
+            wantlistName = l["name"]
+            break
+    #guardar backup
+    backupListName = "{}{}".format(wantlistName, "BACKUP")
+    for l in lists["wantslist"]:
+        if l["name"] == backupListName:
+            backupListId = l["idWantslist"]
+            break
+    if not backupListId is None:
+        mkm.wants_list.delete_wants_list(wants=backupListId).json()
+    r = mkm.wants_list.create_wants_list(data = { "wantslist": [{ "name": backupListName, "idGame": 1 }]}).json()
+    backupListId = r["wantslist"][0]["idWantslist"]
+    wants = mkm.wants_list.get_wants_list_items(wants=wantlistId).json()
+    wants = wants["wantslist"]["item"]
+    action = "addItem"
+    inserted = mkm.wants_list.edit_wants_list(wants=backupListId, data={
+        "action": action,
+        "metaproduct": [asWishListItem(w, action) for w in wants if "idMetaproduct" in w],
+        "product": [asWishListItem(w, action) for w in wants if "idProduct" in w]
+    }).json()
+    #modificar
+    if not foil is None:
+        for w in wants:
+            w["isFoil"] = "true" if foil else "false"
+    if not condition is None:
+        for w in wants:
+            w["minCondition"] = condition
+    if not language is None:
+        for w in wants:
+            w["idLanguage"] = language
+    if not setito is None:
+        if setito == "meta":
+            # TODO: resetear
+            pass
+        elif setito == "old":
+            with open("data/mkm/sets.json", "r", encoding="utf8") as f:
+                mkm_sets = json.load(f)["expansion"]
+            setsexcluidos = ["Alpha","Beta","Unlimited","Friday Night Magic Promos","International Edition","Collectors\u0027 Edition","Foreign Black Bordered","Armada Comics","Clash Pack Promos"]
+            for w in wants:
+                meta = None
+                if "idProduct" in w and "product" in w:
+                    meta = w["product"]["idMetaproduct"]
+                elif "idMetaproduct" in w:
+                    meta = w["idMetaproduct"]
+                else:
+                    meta = None
+                if not meta is None:
+                    # obtener todos los product del metaproduct (cacheando)
+                    filete = "__offlinecache__/mkm/metaproduct/{}.json".format(meta)
+                    try:
+                        with open(filete, "r") as f:                            
+                            data = json.load(f)
+                    except:
+                        m = mkm.market_place.metaproduct(metaproduct=meta).json()
+                        with open(filete, "w") as f:
+                            json.dump(m, f)
+                        data = m
+                    mindate = 999999999999999999999
+                    for p in data["product"]:
+                        for e in mkm_sets:
+                            #encontrar set coindicente con el producto
+                            #excluyendo sets excluidos
+                            if not e["enName"] in setsexcluidos and p["expansionName"] == e["enName"]:
+                                #ver si el release date es menor que el que tenemos actualmente
+                                ets = isodatetodatetime(e["releaseDate"]).timestamp()
+                                if ets < mindate:
+                                    #establecer nuevo set "antiguo"
+                                    mindate = ets
+                                    #poner idproducto al want
+                                    w["idProduct"] = p["idProduct"]
+                                break
+                    # cambiamos de metaproduct a product
+                    w["type"] = "product"
+                else:
+                    pass
+    #vaciar lista
+    mkm.wants_list.edit_wants_list(wants=wantlistId, data={"action":"deleteItem", "want":[{"idWant": w["idWant"]} for w in wants]}).json()
+    action = "addItem"
+    inserted = mkm.wants_list.edit_wants_list(wants=wantlistId, data={
+        "action": action,
+        "product": [asWishListItem(w, action) for w in wants if "idProduct" in w],
+        "metaproduct": [asWishListItem(w, action) for w in wants if "idMetaproduct" in w and not "idProduct" in w]
+    }).json()
+    pass
+def prepareshipments():
+    filete = "__offlinecache__/mkm/orders/tosend.json".format()
+    try:
+        with open(filete, "r") as f:                            
+            data = json.load(f)
+    except:
+        data = mkm.order_management.filter_order(actor=1, state=2).json()
+        with open(filete, "w") as f:
+            json.dump(data, f)
+    allarticles = []
+    utils.showCardsInViewer(data["order"], op="mkm_prepare_packages", fn="test")
+    pass
 #themain()
-updateprices()
+#updateprices()
+#copywantlist(7830554, "AAAPAUPERDECKS")
+#wantlistitems_foil(7775239)
+#d = mkm.wants_list.delete_wants_list(wants=7818659).json()
+#modifywantlist(7830579, condition="EX", setito="old", language=[1,4])
+#a = mkm.account_management.account()
+#pass
+prepareshipments()
