@@ -98,8 +98,9 @@ ENV/
 # mypy
 .mypy_cache/
 __mycache__/
-data
 backup
+data
+data_preparation
+output
 tmp_*.html
 cardviewer_mkm_index.html
-__offlinecache__/

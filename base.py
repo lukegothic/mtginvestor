@@ -130,7 +130,7 @@ class CK:
         except:#TODO: capturar excepcion que corresponda
             print ("Using cached editions")
             editions = []
-            with open("__offlinecache__/ck/editions.csv") as csvfile:
+            with open("data/ck/editions.csv") as csvfile:
                 reader = csv.DictReader(csvfile, delimiter="|")
                 for row in reader:
                     editions.append(row)
@@ -267,10 +267,10 @@ class MKM:
                 "name": edition.xpath("./div[@class='yearExpansionName']/text()")[0],
                 "url": MKM.baseurl + relativeurl.replace("/Expansions/", "/Products/Singles/"),
             })
-        if not os.path.exists(offlinecachedir):
-            os.makedirs(offlinecachedir)
+        if not os.path.exists(datadir):
+            os.makedirs(datadir)
         sql = "DELETE FROM mkm_editions;INSERT INTO mkm_editions(id,name,url) VALUES"
-        with open(offlinecachefile, "w", newline='\n') as f:
+        with open(datafile, "w", newline='\n') as f:
             writer = csv.DictWriter(f, fieldnames=["id", "name", "url"], delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             writer.writeheader()
             for edition in editions:
@@ -283,13 +283,13 @@ class MKM:
         return editions
     def getEditions():
         editions = []
-        offlinecachedir = "__offlinecache__/mkm"
-        offlinecachefile = "{}/editions.csv".format(offlinecachedir)
+        datadir = "data/mkm"
+        datafile = "{}/editions.csv".format(datadir)
         try:
             editions = phppgadmin.query("select id, name, url from mkm_editions")
         except: #TODO: capturar excepcion que corresponda
             try:
-                with open(offlinecachefile) as csvfile:
+                with open(datafile) as csvfile:
                     reader = csv.DictReader(csvfile, delimiter="|")
                     for row in reader:
                         editions.append(row)

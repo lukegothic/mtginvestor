@@ -1,7 +1,7 @@
-import os, re, sys, json, requests, decklist, sqlite3, csv, webbrowser
-import utils
-import deckbox
-
+import os, re, sys, json, requests, sqlite3, csv, webbrowser
+from utils import decklist, cardview
+from endpoints import deckbox, scryfall
+from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog
 
@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 basedir = "__mycache__/scryfall"
 if (not os.path.exists(basedir)):
     os.makedirs(basedir)
-dbdir = "__offlinecache__/scryfall"
+dbdir = "data/scryfall"
 if (not os.path.exists(dbdir)):
     os.makedirs(dbdir)
 dbfile = "{}/scryfall.db".format(dbdir)
@@ -225,32 +225,34 @@ def getcards(cards):
 #getcardsbyset
 #getcards
 #params/filtros: lista cartas o criterio
-def getcardsbysetfromjson(card_list):
+# t=ALL/OLD/NEW
+def getcardsbysetfromjson(card_list, t="ALL"):
     cards_by_set = {}
-    with open("data/default-cards-20200526060425.json", 'r', encoding="utf8") as json_file:
-        data = json.load(json_file)
+    data = scryfall.bulk_cards(t="default")
+    print("# cartas a procesar: {}".format(len(card_list)))
+    numfound = 0
+    notfounds = []
     for card in card_list:
-        kounter = 0
+        found = False
         name = card.lower()
         for d in data:
-            thecard = None
-            if (name == d["name"].lower()):
-                kounter += 1
-                thecard = d
-            else:
-                if ("card_faces" in d and name == d["card_faces"][0]["name"].lower()):
-                    kounter += 1
-                    thecard = d["card_faces"][0]
-            if thecard != None:
+            if ((name == d["name"].lower() or ("card_faces" in d and name == d["card_faces"][0]["name"].lower())) and ((d["reprint"] == False) if t == "OLD" else True)):
                 if not d["set"] in cards_by_set:
                     cards_by_set[d["set"]] = []
                 cards_by_set[d["set"]].append({
-                    "name": thecard["name"],
-                    "image_uri": thecard["image_uris"]["border_crop"],
+                    "name": d["name"],
+                    "image_uri": d["image_uris"]["border_crop"] if "image_uris" in d else d["card_faces"][0]["image_uris"]["border_crop"],
                     "price": d["prices"]["eur"]
                 })
-        if kounter == 0:
-            print(card)
+                numfound += 1
+                found = True
+                sys.stdout.write("# encontradas: %d   \r" % numfound)
+                sys.stdout.flush()
+                if t == "OLD":
+                    break
+        if not found:
+            notfounds.append(name)
+    print(notfounds)
     return cards_by_set
 def getcardsbysetfromjson_vendibles():
     cards_by_set = {}
@@ -268,7 +270,7 @@ def getcardsbysetfromjson_vendibles():
                 })
     return cards_by_set
 def pricedecklist():
-    deck = decklist.readdeckfromfile()
+    deck = decklist.fromfile()
     prices = getcardprices(c.replace("'", "''") for c in deck)
     total = 0
     with open("prices.csv", "w") as f:
@@ -284,13 +286,13 @@ def pricedecklist():
                     break
     print("Total = {:.2f} Euros".format(total))
 def cardsbyedition():
-    deck = decklist.readdeckfromfile()
-    cards = getcardsbysetfromjson(deck)
+    deck = decklist.fromfile()
+    cards = getcardsbysetfromjson(deck, t="OLD")
     #cards = getcards(c.replace("'", "''") for c in deck)
-    utils.showCardsInViewer(cards)
+    cardview.show(cards)
 def vendiblesmodern():
     cards = getcardsbysetfromjson_vendibles()
-    utils.showCardsInViewer(cards)
+    cardview.show(cards)
 def vendiblesmodern_antiguodesdeBD():
     inventory = deckbox.getInventory()
     inventory_ids = [c["id"] for c in inventory]
@@ -366,14 +368,6 @@ def valoramtgo():
         else:
             total = total + (cards2[card]["tix"] * cards2[card]["Quantity"])
     print("Total", total)
-def readjsondb():
-    with open("{}/scryfall.json".format(dbdir), "r", encoding="utf-8") as f:
-        a = json.loads(f.read())
-    return a
-def readjsondb_online():
-    req = requests.get("https://archive.scryfall.com/json/scryfall-default-cards.json")
-    data = json.loads(req.text)
-    print(len(data))
 def menu():
     os.system('cls')
     print("==[ DB retriever ]==")
@@ -387,7 +381,6 @@ def menu():
     print("  8. Valora MTGO")
     print("  0. Salir")
     return input("Opcion: ")
-
 create_db()
 options = {
     "1": updatedb,

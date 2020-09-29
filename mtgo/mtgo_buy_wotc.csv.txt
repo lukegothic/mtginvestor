@@ -1,6 +1,0 @@
-947	tix	
-28	wwk sealed event pack	
-35	ftv: relics	
-30	deck series: exiler	
-433,12	cardhoarder	
--600	tixvendidos	mtgotickets
